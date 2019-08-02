@@ -7,8 +7,8 @@ contract Unicef {
     using SafeMath for uint;
 
     //Variables
-    address public feeDonation; // the account that receives donation fees
-    uint256 public feePercent; // the fee percentage
+    address public donationAccount; // the account that receives donation fees a.k.a UNICEF
+    uint256 public donationAmount; // the donation amount
     address constant ETHER = address(0); // store Ether in tokens mapping with blank address
     mapping(address => mapping(address => uint256)) public tokens;
     mapping(uint256 => _Donation) public donations;
@@ -59,9 +59,9 @@ contract Unicef {
         uint256 timestamp;
     }
 
-    constructor (address _feeDonation, uint256 _feePercent) public {
-        feeDonation = _feeDonation;
-        feePercent = _feePercent;
+    constructor (address _donationAccount, uint256 _donationAmount) public {
+        donationAccount = _donationAccount;
+        donationAmount = _donationAmount;
     }
 
     // Fallback: reverts if Ether is sent to this smart contract by mistake
@@ -110,11 +110,11 @@ contract Unicef {
 
     function _Donate(uint256 _donationId, address _user, address _tokenGet, uint256 _amountGet, address _tokenGive, uint256 _amountGive) internal {
         // Fee paid by the user that fills the donation, a.k.a. msg.sender.
-        uint256 _feeAmount = _amountGive.mul(feePercent).div(100);
+        uint256 _feeAmount = _amountGive.mul(donationAmount).div(100);
 
         tokens[_tokenGet][msg.sender] = tokens[_tokenGet][msg.sender].sub(_amountGet.add(_feeAmount));
         tokens[_tokenGet][_user] = tokens[_tokenGet][_user].add(_amountGet);
-        tokens[_tokenGet][feeDonation] = tokens[_tokenGet][feeDonation].add(_feeAmount);
+        tokens[_tokenGet][donationAccount] = tokens[_tokenGet][donationAccount].add(_feeAmount);
         tokens[_tokenGive][_user] = tokens[_tokenGive][_user].sub(_amountGive);
         tokens[_tokenGive][msg.sender] = tokens[_tokenGive][msg.sender].add(_amountGive);
 
