@@ -109,7 +109,7 @@ contract Unicef {
     }
 
     function _Donate(uint256 _donationId, address _user, address _tokenGet, uint256 _amountGet, address _tokenGive, uint256 _amountGive) internal {
-        // Fee paid by the user that fills the order, a.k.a. msg.sender.
+        // Fee paid by the user that fills the donation, a.k.a. msg.sender.
         uint256 _feeAmount = _amountGive.mul(feePercent).div(100);
 
         tokens[_tokenGet][msg.sender] = tokens[_tokenGet][msg.sender].sub(_amountGet.add(_feeAmount));
