@@ -1,9 +1,12 @@
 const express = require("express");
+const helmet = require('helmet');
 const cors = require("cors");
 require("dotenv").config();
 const env = require("./env");
 
 const app = express();
+
+app.use(helmet());
 
 //Use CORS middleware
 app.use(cors());
