@@ -12,7 +12,7 @@
                         <v-tilelayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></v-tilelayer>
                         <v-marker-cluster :options="clusterOptions" @clusterclick="sheet=true;" @click="">
                             <v-marker v-for="venue in venueLocations" :key="venue.name+venue.position"
-                                :lat-lng="venue.position" :icon="icon">
+                                :lat-lng="venue.position" :icon="icon" :color="venue.color">
                                 <v-popup :content="venue.description">
                                 </v-popup>
                             </v-marker>
@@ -82,7 +82,8 @@
                 limit: 500,
                 countries: [],
                 center: L.latLng(-33.311836, 26.520642),
-                sheet: false
+                sheet: false,
+                colors:[]
             }
         },
         watch: {
@@ -102,22 +103,32 @@
             }, 5000);
         },
         beforeMount() {
-            var venues = require("../json/shoolscapetown.json")
+            var venues = require("../json/schools.json")
             let This = this
             let count = 1
             venues.forEach((venue) => {
                 if (!venue.GIS_Latitude || !venue.GIS_Longitude) {
                     return
                 }
+                venue.GIS_Latitude = venue.GIS_Latitude.toString().replace(/,/g, '.')
+                venue.GIS_Longitude = venue.GIS_Longitude.toString().replace(/,/g, '.')
+                console.log(venue.GIS_Latitude === venue.GIS_Longitude, venue.GIS_Latitude, venue.GIS_Longitude
+                    .toString())
+                if (venue.GIS_Latitude === venue.GIS_Longitude) {
+                    console.log("equal")
+                    return
+                }
                 count++
                 //console.log(`count ${count}`)
                 this.venueLocations.push({
                     name: venue.Official_Institution_Name,
+                    color:"#7EC0EE",
                     description: ("Name: " + venue.Official_Institution_Name + "<br>Address: " + venue
                         .StreetAddress +
                         "\n" + venue.PostalAddress +
                         "\n" + venue.Suburb + "\n" + venue.TownCity),
-                    position: latLng(venue.GIS_Latitude.toString().replace(/ /g, ''),
+                    position: latLng(
+                        venue.GIS_Latitude.toString().replace(/ /g, ''),
                         venue.GIS_Longitude.toString().replace(/ /g, '')
                     ),
                     country: reverseGeoCoder.search(venue.GIS_Longitude.toString().replace(/ /g, ''),

@@ -90,6 +90,12 @@
           text: 'View Connected Schools',
           to: "/ViewSchools",
           render: true
+        },
+        {
+          icon: 'find_in_page',
+          text: 'Landing',
+          to: "/Landing",
+          render: true
         }
       ],
     }),
