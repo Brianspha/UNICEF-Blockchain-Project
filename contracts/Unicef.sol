@@ -1,6 +1,5 @@
 pragma solidity ^0.5.0;
 
-import "./Token.sol";
 import "node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 contract Unicef {
@@ -8,8 +7,9 @@ contract Unicef {
 
     //Variables
     address public donationAccount; // the account that receives donation fees a.k.a UNICEF
-    uint256 public donationAmount; // the donation amount
+    uint256 public feePercent; // the fee percentage
     address constant ETHER = address(0); // store Ether in tokens mapping with blank address
+    uint256 public speedConnectivity;
     mapping(address => mapping(address => uint256)) public tokens;
     mapping(uint256 => _Donation) public donations;
     uint256 public donationCount;
@@ -59,9 +59,10 @@ contract Unicef {
         uint256 timestamp;
     }
 
-    constructor (address _donationAccount, uint256 _donationAmount) public {
+    constructor (address _donationAccount, uint256 _feePercent, uint256 _speedConnectivity) public {
         donationAccount = _donationAccount;
-        donationAmount = _donationAmount;
+        feePercent = _feePercent;
+        speedConnectivity = _speedConnectivity;
     }
 
     // Fallback: reverts if Ether is sent to this smart contract by mistake
@@ -101,6 +102,7 @@ contract Unicef {
 
     function fillDonation(uint256 _id) public {
         require(_id > 0 && _id <= donationCount);
+        require(speedConnectivity >= 10);
         require(!donationFilled[_id]);
         require(!donationCancelled[_id]);
         _Donation storage _donation = donations[_id];
@@ -109,12 +111,12 @@ contract Unicef {
     }
 
     function _Donate(uint256 _donationId, address _user, address _tokenGet, uint256 _amountGet, address _tokenGive, uint256 _amountGive) internal {
-        // Fee paid by the user that fills the donation, a.k.a. msg.sender.
-        uint256 _feeAmount = _amountGive.mul(donationAmount).div(100);
+        // Fee paid by the user that fills the donations, a.k.a. msg.sender.
+        uint256 _donationFee = _amountGive.mul(feePercent).div(100);
 
-        tokens[_tokenGet][msg.sender] = tokens[_tokenGet][msg.sender].sub(_amountGet.add(_feeAmount));
+        tokens[_tokenGet][msg.sender] = tokens[_tokenGet][msg.sender].sub(_amountGet.add(_donationFee));
         tokens[_tokenGet][_user] = tokens[_tokenGet][_user].add(_amountGet);
-        tokens[_tokenGet][donationAccount] = tokens[_tokenGet][donationAccount].add(_feeAmount);
+        tokens[_tokenGet][donationAccount] = tokens[_tokenGet][donationAccount].add(_donationFee);
         tokens[_tokenGive][_user] = tokens[_tokenGive][_user].sub(_amountGive);
         tokens[_tokenGive][msg.sender] = tokens[_tokenGive][msg.sender].add(_amountGive);
 
