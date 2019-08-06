@@ -9,23 +9,100 @@
                     </v-toolbar>
                     <highcharts :constructor-type="'mapChart'" :options="mapOptions" class="map"></highcharts>
                 </v-flex>
-                <v-bottom-sheet v-model="sheet" :inset="true" :hide-overlay="true">
-                    <v-sheet class="text-center" height="200px" align-center justify-center row fill-height>
-                        <v-btn class="my-6" depressed color="error" @click="sheet = !sheet">close</v-btn>
-                    </v-sheet>
-                </v-bottom-sheet>
+                <v-layout justify-center v-if="dialog">
+                    <v-dialog v-model="dialog" fullscreen hide-overlay transition="dialog-bottom-transition">
+
+                            <v-toolbar dark color="primary">
+                                <v-btn icon dark @click="dialog = false">
+                                    <v-icon>close</v-icon>
+                                </v-btn>
+                                <v-toolbar-title>{{country}}</v-toolbar-title>
+                                <v-spacer></v-spacer>
+                                <v-toolbar-items>
+                                    <v-btn dark text @click="dialog = false">Close</v-btn>
+                                </v-toolbar-items>
+                            </v-toolbar>
+                            <v-map :zoom="zoom" :center="center" style="z-index:1;">
+                                <v-icondefault></v-icondefault>
+                                <v-tilelayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></v-tilelayer>
+                                <v-marker-cluster :options="clusterOptions" @clusterclick="sheet=true;" @click="">
+                                    <v-marker v-for="school in schools" :key="school.name+school.position"
+                                        :lat-lng="school.position" :icon="icon" :color="school.color">
+                                        <v-popup :content="school.description">
+                                        </v-popup>
+                                    </v-marker>
+                                </v-marker-cluster>
+                            </v-map>
+                    </v-dialog>
+                </v-layout>
             </v-layout>
         </v-container>
     </v-app>
 </template>
 
 <script>
+    import {
+        LMap,
+        LTileLayer,
+        LMarker,
+        LIconDefault,
+        LPopup
+    } from 'vue2-leaflet';
+    import * as Vue2Leaflet from 'vue2-leaflet'
+    import Vue2LeafletMarkerCluster from 'vue2-leaflet-markercluster'
+    import {
+        latLng,
+        Icon,
+        icon
+    } from 'leaflet'
+    import iconUrl from 'leaflet/dist/images/marker-icon.png'
+    import shadowUrl from 'leaflet/dist/images/marker-shadow.png'
     import reverseGeoCoder from 'fast-reverse-geocoder'
     export default {
+        components: {
+            'v-map': Vue2Leaflet.LMap,
+            'v-tilelayer': Vue2Leaflet.LTileLayer,
+            'v-icondefault': Vue2Leaflet.LIconDefault,
+            'v-marker': Vue2Leaflet.LMarker,
+            'v-popup': Vue2Leaflet.LPopup,
+            'v-marker-cluster': Vue2LeafletMarkerCluster,
+            'v-icondefault': Vue2Leaflet.LIconDefault,
+            'v-marker': Vue2Leaflet.LMarker,
+            'v-popup': Vue2Leaflet.LPopup,
+        },
         data() {
             return {
+                country: '',
                 sheet: false,
-                mapOptions: {}
+                mapOptions: {},
+                dialog: false,
+                clickedCountry: null,
+                schools: [],
+                url: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
+                attribution: '&copy; <a href=" http://osm.org/copyright">OpenStreetMap </a> contributors',
+                map: null,
+                zoom: 10,
+                maxBoundsViscosity: 1.0,
+                layers: [L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+                    maxZoom: 18,
+                    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors, Points &copy 2012 LINZ'
+                })],
+                icon: icon(Object.assign({}, Icon.Default.prototype.options, {
+                    iconUrl,
+                    shadowUrl
+                })),
+                clusterOptions: {},
+                RhodeITContract: null,
+                limit: 500,
+                countries: [],
+                center: L.latLng(-33.311836, 26.520642),
+                sheet: false,
+                colors: []
+            }
+        },
+        watch: {
+            map: function () {
+                this.$forceUpdate()
             }
         },
         beforeMount() {
@@ -33,6 +110,7 @@
         },
         methods: {
             initData() {
+                let This = this
                 this.mapOptions = {
                     chart: {
                         map: 'myMapName'
@@ -49,6 +127,7 @@
                             alignTo: 'spacingBox'
                         }
                     },
+
                     colorAxis: {
                         min: 1,
                         type: 'logarithmic',
@@ -59,6 +138,34 @@
                             [0.67, '#4444FF'],
                             [1, '#000022']
                         ]
+                    },
+                    plotOptions: {
+                        series: {
+                            point: {
+                                events: {
+                                    click: function () {
+                                        This.dialog = true
+                                        This.country = this.name
+                                        This.findCountrySchools()
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    drilldown: {
+                        activeDataLabelStyle: {
+                            color: '#FFFFFF',
+                            textDecoration: 'none',
+                            textOutline: '1px #000000'
+                        },
+                        drillUpButton: {
+                            relativeTo: 'plotBox',
+                            position: {
+                                x: 70,
+                                y: 280
+                            }
+                        },
+                        series: [{}]
                     },
                     series: [{
                         animation: {
@@ -71,6 +178,45 @@
                         }
                     }]
                 }
+            },
+            findCountrySchools() {
+                var schools = require('../json/schools.json')
+                this.schools = []
+                let This = this
+                let count = 1
+                schools.forEach((schools) => {
+                    if (!schools.GIS_Latitude || !schools.GIS_Longitude) {
+                        return
+                    }
+                    schools.GIS_Latitude = schools.GIS_Latitude.toString().replace(/,/g, '.')
+                    schools.GIS_Longitude = schools.GIS_Longitude.toString().replace(/,/g, '.')
+                    console.log(schools.GIS_Latitude === schools.GIS_Longitude, schools.GIS_Latitude, schools
+                        .GIS_Longitude
+                        .toString())
+                    if (schools.GIS_Latitude === schools.GIS_Longitude) {
+                        console.log("equal")
+                        return
+                    }
+                    this.center=[schools.GIS_Latitude,schools.GIS_Longitude]
+                    this.schools.push({
+                        name: schools.Official_Institution_Name,
+                        color: "#7EC0EE",
+                        description: ("Name: " + schools.Official_Institution_Name + "<br>Address: " +
+                            schools
+                            .StreetAddress +
+                            "\n" + schools.PostalAddress +
+                            "\n" + schools.Suburb + "\n" + schools.TownCity),
+                        position: latLng(
+                            schools.GIS_Latitude.toString().replace(/ /g, ''),
+                            schools.GIS_Longitude.toString().replace(/ /g, '')
+                        ),
+                        country: reverseGeoCoder.search(schools.GIS_Longitude.toString().replace(/ /g,
+                                ''),
+                            schools
+                            .GIS_Latitude.toString().replace(/ /g, ''))
+                    })
+                })
+                return this.schools
             },
             getCountriesSchools() {
                 var schools = require('../json/schools.json')
@@ -150,6 +296,14 @@
     }
 </script>
 <style scoped>
+    @import "~leaflet/dist/leaflet.css";
+    @import "~leaflet.markercluster/dist/MarkerCluster.css";
+    @import "~leaflet.markercluster/dist/MarkerCluster.Default.css";
+
+    #map {
+        height: 100%;
+    }
+
     .map {
         min-height: 80%;
     }
