@@ -3,7 +3,7 @@
         <v-container align-center justify-center row fill-height>
             <v-layout>
                 <v-flex>
-                    <v-toolbar color="#7EC0EE" dark>
+                    <v-toolbar color="#7EC0EE">
                         <v-toolbar-title>Schools</v-toolbar-title>
                         <v-spacer></v-spacer>
                     </v-toolbar>
@@ -12,27 +12,27 @@
                 <v-layout justify-center v-if="dialog">
                     <v-dialog v-model="dialog" fullscreen hide-overlay transition="dialog-bottom-transition">
 
-                            <v-toolbar dark color="primary">
-                                <v-btn icon dark @click="dialog = false">
-                                    <v-icon>close</v-icon>
-                                </v-btn>
-                                <v-toolbar-title>{{country}}</v-toolbar-title>
-                                <v-spacer></v-spacer>
-                                <v-toolbar-items>
-                                    <v-btn dark text @click="dialog = false">Close</v-btn>
-                                </v-toolbar-items>
-                            </v-toolbar>
-                            <v-map :zoom="zoom" :center="center" style="z-index:1;">
-                                <v-icondefault></v-icondefault>
-                                <v-tilelayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></v-tilelayer>
-                                <v-marker-cluster :options="clusterOptions" @clusterclick="sheet=true;" @click="">
-                                    <v-marker v-for="school in schools" :key="school.name+school.position"
-                                        :lat-lng="school.position" :icon="icon" :color="school.color">
-                                        <v-popup :content="school.description">
-                                        </v-popup>
-                                    </v-marker>
-                                </v-marker-cluster>
-                            </v-map>
+                        <v-toolbar dark color="primary">
+                            <v-btn icon dark @click="dialog = false">
+                                <v-icon>close</v-icon>
+                            </v-btn>
+                            <v-toolbar-title>{{country}}</v-toolbar-title>
+                            <v-spacer></v-spacer>
+                            <v-toolbar-items>
+                                <v-btn  text @click="dialog = false" color="transparent">Save</v-btn>
+                            </v-toolbar-items>
+                        </v-toolbar>
+                        <v-map :zoom="zoom" :center="center" style="z-index:1;">
+                            <v-icondefault></v-icondefault>
+                            <v-tilelayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></v-tilelayer>
+                            <v-marker-cluster :options="clusterOptions" @clusterclick="sheet=true;" @click="">
+                                <v-marker v-for="school in schools" :key="school.name+school.position"
+                                    :lat-lng="school.position" :icon="icon" :color="school.color">
+                                    <v-popup :content="school.description">
+                                    </v-popup>
+                                </v-marker>
+                            </v-marker-cluster>
+                        </v-map>
                     </v-dialog>
                 </v-layout>
             </v-layout>
@@ -197,7 +197,7 @@
                         console.log("equal")
                         return
                     }
-                    this.center=[schools.GIS_Latitude,schools.GIS_Longitude]
+                    this.center = [schools.GIS_Latitude, schools.GIS_Longitude]
                     this.schools.push({
                         name: schools.Official_Institution_Name,
                         color: "#7EC0EE",
