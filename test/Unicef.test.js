@@ -1,4 +1,4 @@
-import { ether, EVM_REVERT, ETHER_ADDRESS } from './helpers'
+import { tokens, ether, EVM_REVERT, ETHER_ADDRESS } from './helpers'
 
 const Token = artifacts.require('./Token')
 const Unicef = artifacts.require('./Unicef')
@@ -18,7 +18,7 @@ contract('Unicef', ([deployer, donationAccount, user1, user2]) => {
     token = await Token.new()
 
     // Transfer some tokens to user1
-    token.transfer(user1, tokens(100), { from: deployer })
+    //token.transfer(user1, tokens(100), { from: deployer })
 
     // Deploy unicef contract
     unicef = await Unicef.new(donationAccount, feePercent, speedConnectivity)
@@ -37,7 +37,7 @@ contract('Unicef', ([deployer, donationAccount, user1, user2]) => {
 
    it('tracks the speed connecticity', async () => {
     const result = await unicef.speedConnectivity()
-    result.should.equal(speedConnectivity)
+    result.toString().should.equal(speedConnectivity.toString())
     })
   })
 
@@ -144,7 +144,7 @@ contract('Unicef', ([deployer, donationAccount, user1, user2]) => {
  
     it('emits an "donation" event', async () => {
       const log = result.logs[0]
-      log.event.should.eq('donation')
+      log.event.should.eq('Donation')
       const event = log.args
       event.id.toString().should.equal('1', 'id is correct')
       event.user.should.equal(user1, 'user is correct')
@@ -167,7 +167,7 @@ contract('Unicef', ([deployer, donationAccount, user1, user2]) => {
       await token.approve(unicef.address, tokens(2), { from: user2 })
       await unicef.depositToken(token.address, tokens(2), { from: user2 })
       // user1 makes an donation through buying tokens with Ether
-      await unicef.makedonation(token.address, tokens(1), ETHER_ADDRESS, ether(1), { from: user1 })
+      await unicef.makeDonation(token.address, tokens(1), ETHER_ADDRESS, ether(1), { from: user1 })
     })
 
     describe('filling donations', async () => {
@@ -199,7 +199,7 @@ contract('Unicef', ([deployer, donationAccount, user1, user2]) => {
           donationFilled.should.equal(true)
         })
 
-        it('emits a "Trade" event', async () => {
+        it('emits a "Donate" event', async () => {
           const log = result.logs[0]
           log.event.should.eq('Trade')
           const event = log.args
