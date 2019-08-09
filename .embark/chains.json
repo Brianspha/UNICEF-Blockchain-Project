@@ -1,1 +1,10 @@
-{}
+{
+  "0x6ef4db78b962e5c3e61e9e0d36e7a03ee1cebe148200b821c7207f796b4b3e91": {
+    "contracts": {
+      "0xb3a92f057bbf4078fff70be51618a64bf0eff7eb422eedee64b15c726dad0664": {
+        "name": "UNICEFContract",
+        "address": "0x12827365DbEEc499E50277E821e83bC62461ee61"
+      }
+    }
+  }
+}

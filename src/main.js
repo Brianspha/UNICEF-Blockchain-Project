@@ -13,7 +13,11 @@ import mapInit from 'highcharts/modules/map'
 import addWorldMap from './json/worldmap'
 import Highcharts from 'highcharts'
 import HighchartsVue from 'highcharts-vue'
+import More from 'highcharts/highcharts-more'
+import highchartsFunnel from 'highcharts/modules/funnel'
 
+highchartsFunnel(Highcharts);
+More(Highcharts)
 
 
 delete Icon.Default.prototype._getIconUrl;
@@ -24,6 +28,7 @@ Icon.Default.mergeOptions({
 });
 mapInit(Highcharts)
 addWorldMap(Highcharts)
+Vue.use(Highcharts)
 Vue.use(HighchartsVue)
 Vue.use(infiniteScroll)
 Vue.use(VueAsyncData)

@@ -1,0 +1,94 @@
+[{
+        "name": "Nepal",
+        "value": 6.5,
+        "isp": "MTN"
+    },
+    {
+        "name": "Georgia",
+        "value": 6.5,
+        "isp": "MTN"
+    },
+    {
+        "name": "Brunei Darussalam",
+        "value": 7.4,
+        "isp": "MTN"
+    },
+    {
+        "name": "El Salvador",
+        "value": 7.2,
+        "isp": "Vodacom"
+    },
+    {
+        "name": "Uruguay",
+        "value": 8.1,
+        "isp": "Cell C"
+    },
+    {
+        "name": "Bolivia",
+        "value": 17.8,
+        "isp": "MTN"
+    },
+    {
+        "name": "Trinidad and Tobago",
+        "value": 34,
+        "isp": "Cell C"
+    },
+    {
+        "name": "Costa Rica",
+        "value": 7.6,
+        "isp": "Cell C"
+    },
+    {
+        "name": "Honduras",
+        "value": 8.4,
+        "isp": "Cell C"
+    },
+    {
+        "name": "Jamaica",
+        "value": 8.3,
+        "isp": "Telkom"
+    },
+    {
+        "name": "Australia",
+        "value": 409.4,
+        "isp": "Vodacom"
+    },
+    {
+        "name": "New Zealand",
+        "value": 34.1,
+        "isp": "Virgin Mobile"
+    },
+    {
+        "name": "Papua New Guinea",
+        "value": 7.1,
+        "isp": "Cell C"
+    },
+    {
+        "name": "Senegal",
+        "isp": "Cell C"
+    },
+    {
+        "name": "Cameroon",
+        "value": 9.2,
+        "isp": "Cell C"
+    },
+    {
+        "name": "Germany",
+        "value": 767.1,
+        "isp": "Cell C"
+    }, {
+        "name": "Croatia",
+        "value": 20.7,
+        "isp": "Vodacom"
+    },
+    {
+        "name": "Belgium",
+        "value": 97.2,
+        "isp": "Cell C"
+    },
+    {
+        "name": "Czech Republic",
+        "value": 111.7,
+        "isp": "Telkom"
+    }
+]

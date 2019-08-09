@@ -9,38 +9,51 @@
                     </v-toolbar>
                     <highcharts :constructor-type="'mapChart'" :options="mapOptions" class="map"></highcharts>
                 </v-flex>
-                <v-layout justify-center v-if="dialog">
-                    <v-dialog v-model="dialog" fullscreen hide-overlay transition="dialog-bottom-transition">
-
-                        <v-toolbar dark color="primary">
-                            <v-btn icon dark @click="dialog = false">
-                                <v-icon>close</v-icon>
-                            </v-btn>
+                <v-dialog v-model="dialog" max-width="100%" fullscreen hide-overlay lazy
+                    transition="dialog-bottom-transition">
+                    <v-card>
+                        <v-toolbar dark color="#7EC0EE">
                             <v-toolbar-title>{{country}}</v-toolbar-title>
                             <v-spacer></v-spacer>
                             <v-toolbar-items>
-                                <v-btn  text @click="dialog = false" color="transparent">Save</v-btn>
+                                <v-btn dark flat @click="dialog = false;">Close</v-btn>
                             </v-toolbar-items>
                         </v-toolbar>
-                        <v-map :zoom="zoom" :center="center" style="z-index:1;">
-                            <v-icondefault></v-icondefault>
-                            <v-tilelayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"></v-tilelayer>
-                            <v-marker-cluster :options="clusterOptions" @clusterclick="sheet=true;" @click="">
-                                <v-marker v-for="school in schools" :key="school.name+school.position"
-                                    :lat-lng="school.position" :icon="icon" :color="school.color">
-                                    <v-popup :content="school.description">
-                                    </v-popup>
-                                </v-marker>
-                            </v-marker-cluster>
-                        </v-map>
-                    </v-dialog>
-                </v-layout>
+                        <v-tabs v-model="tabs" centered color="transparent" slider-color="white">
+                            <v-tab v-for="(tab,index ) in tabItems" :key="index">
+                                {{ tab.title }}
+                            </v-tab>
+                        </v-tabs>
+                        <v-tabs-items v-model="tabs">
+                            <v-tab-item style="height:1024px">
+                                <v-map :zoom="zoom" :center="center" min-height="1024px">
+                                    <v-icondefault></v-icondefault>
+                                    <v-tilelayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png">
+                                    </v-tilelayer>
+                                    <v-marker-cluster :options="clusterOptions" @clusterclick="" @click="">
+                                        <v-marker v-for="school in schools" :key="school.name+school.position"
+                                            :lat-lng="school.position" :icon="icon" :color="school.color">
+                                            <v-popup :content="school.description">
+                                            </v-popup>
+                                        </v-marker>
+                                    </v-marker-cluster>
+                                </v-map>
+                            </v-tab-item>
+                            <v-tab-item style="height:1024px">
+                                <highcharts :options="DetailsOptions" class="map">
+                                </highcharts>
+
+                            </v-tab-item>
+                        </v-tabs-items>
+                    </v-card>
+                </v-dialog>
             </v-layout>
         </v-container>
     </v-app>
 </template>
 
 <script>
+    import JSON5 from 'json5'
     import {
         LMap,
         LTileLayer,
@@ -81,7 +94,7 @@
                 url: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
                 attribution: '&copy; <a href=" http://osm.org/copyright">OpenStreetMap </a> contributors',
                 map: null,
-                zoom: 10,
+                zoom: 7,
                 maxBoundsViscosity: 1.0,
                 layers: [L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
                     maxZoom: 18,
@@ -97,12 +110,22 @@
                 countries: [],
                 center: L.latLng(-33.311836, 26.520642),
                 sheet: false,
-                colors: []
+                colors: [],
+                DetailsOptions: {},
+                tabItems: [{
+                        title: "View Map"
+                    },
+                    {
+                        title: "Infographics"
+                    }
+                ],
+                tabs: null
             }
         },
         watch: {
             map: function () {
                 this.$forceUpdate()
+                this.map.invalidateSize()
             }
         },
         beforeMount() {
@@ -119,7 +142,7 @@
                         text: 'Schools connected to the internet by country'
                     },
                     subtitle: {
-                        text: 'Source map: World Map shwoing Schools connected to the internet by country provided by UNICEF</a>'
+                        text: 'Source map: World Map showing Schools connected to the internet by country provided by UNICEF</a>'
                     },
                     mapNavigation: {
                         enabled: true,
@@ -146,6 +169,7 @@
                                     click: function () {
                                         This.dialog = true
                                         This.country = this.name
+                                        This.generateDetails()
                                         This.findCountrySchools()
                                     }
                                 }
@@ -168,6 +192,9 @@
                         series: [{}]
                     },
                     series: [{
+                        legend: {
+                            enabled: false
+                        },
                         animation: {
                             duration: 1000
                         },
@@ -190,13 +217,14 @@
                     }
                     schools.GIS_Latitude = schools.GIS_Latitude.toString().replace(/,/g, '.')
                     schools.GIS_Longitude = schools.GIS_Longitude.toString().replace(/,/g, '.')
-                    console.log(schools.GIS_Latitude === schools.GIS_Longitude, schools.GIS_Latitude, schools
-                        .GIS_Longitude
-                        .toString())
+                    // //console.log(schools.GIS_Latitude === schools.GIS_Longitude, schools.GIS_Latitude, schools
+                    //   .GIS_Longitude
+                    //    .toString())
                     if (schools.GIS_Latitude === schools.GIS_Longitude) {
-                        console.log("equal")
+                        ////console.log("equal")
                         return
                     }
+                    //console.log(reverseGeoCoder.search(schools.GIS_Longitude.toString().replace(/ /g,'')))
                     this.center = [schools.GIS_Latitude, schools.GIS_Longitude]
                     this.schools.push({
                         name: schools.Official_Institution_Name,
@@ -205,7 +233,7 @@
                             schools
                             .StreetAddress +
                             "\n" + schools.PostalAddress +
-                            "\n" + schools.Suburb + "\n" + schools.TownCity),
+                            "\n" + schools.TownCity),
                         position: latLng(
                             schools.GIS_Latitude.toString().replace(/ /g, ''),
                             schools.GIS_Longitude.toString().replace(/ /g, '')
@@ -217,6 +245,89 @@
                     })
                 })
                 return this.schools
+            },
+            generateDetails() {
+                let This = this
+                this.DetailsOptions = {
+                    chart: {
+                        type: 'packedbubble',
+                        height: '100%'
+                    },
+                    title: {
+                        text: 'Schools Connected to the Internet By Internet Service Provider (ISP)'
+                    },
+                    tooltip: {
+                        useHTML: true,
+                        pointFormat: '<b>School Name:</b>{point.schoolName} <br> <b>Address:</b> {point.schoolAddress} <br> <b>ConnectionSpeed:</b> {point.speed}'
+                    },
+                    plotOptions: {
+                        packedbubble: {
+                            minSize: '20%',
+                            maxSize: '100%',
+                            zMin: 0,
+                            zMax: 1000,
+                            layoutAlgorithm: {
+                                gravitationalConstant: 0.05,
+                                splitSeries: true,
+                                seriesInteraction: false,
+                                dragBetweenSeries: true,
+                                parentNodeLimit: true
+                            },
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.name}',
+                                filter: {
+                                    property: 'y',
+                                    operator: '>',
+                                    value: 250
+                                },
+                                style: {
+                                    color: 'black',
+                                    textOutline: 'none',
+                                    fontWeight: 'normal'
+                                }
+                            }
+                        }
+                    },
+                    series: This.getISPForSchools()
+                }
+            },
+            getISPForSchools() {
+                var ispData = require('../json/isp.json')
+                var ispFormated = []
+                ispData.forEach((isp) => {
+                    //    //console.log(!ispFormated.some((ispformated) => ispformated.name ===isp.isp))
+                    if (ispFormated.length === 0 || !ispFormated.some((ispformated) => ispformated.name === isp
+                            .isp)) {
+                        ispFormated.push({
+                            name: isp.isp,
+                            data: [{
+                                name: isp.name,
+                                value: isp.value,
+                                schoolName: "Some school",
+                                schoolAddress: "Some School Address",
+                                speed:12
+                            }]
+                        })
+                    } else {
+                        ispFormated = ispFormated.map((ispformated) => {
+                            if (ispformated.name === isp.isp) {
+                                ispformated.data.push({
+                                    name: isp.name,
+                                    value: isp.value,
+                                    schoolName: "Some school",
+                                    schoolAddress: "Some School Address",
+                                    speed:12
+                                })
+                                return ispformated
+                            } else {
+                                return ispformated
+                            }
+                        })
+                    }
+                })
+                console.log(ispFormated)
+                return ispFormated
             },
             getCountriesSchools() {
                 var schools = require('../json/schools.json')
@@ -232,12 +343,12 @@
                             .toString()
                             .replace(/ /g, '')
                         if (school.GIS_Latitude === school.GIS_Longitude) {
-                            console.log("equal")
+                            ////console.log("equal")
                             return
                         }
-                        // console.log(school)
+                        // ////console.log(school)
                         var country = reverseGeoCoder.search(school.GIS_Longitude, school.GIS_Latitude)
-                        //console.log(country)
+                        //////console.log(country)
                         if (!country) {
                             return
                         }
@@ -257,7 +368,7 @@
                 //green well connected
                 //yellow okay connection
                 //red bad service
-                console.log(countries)
+                ////console.log(countries)
                 var newschoolsData = []
                 countries.forEach((country) => {
                     newschoolsData.push({
@@ -268,28 +379,28 @@
                         countryName: country[0]
                     })
                 })
-                console.log(newschoolsData)
-                // console.log(newschoolsData)
+                ////console.log(newschoolsData)
+                // ////console.log(newschoolsData)
                 return newschoolsData
             },
             getConnectedSchools() {
                 var countrySchools = this.getCountriesSchools()
                 var map = require('../json/worldmapplain.json')
-                // console.log('schools: ', countrySchools)
+                // ////console.log('schools: ', countrySchools)
                 var connectedSchools = map.features.filter((feature) => {
-                    // console.log(feature.properties, countrySchools.some((school) => school.name === feature
+                    // ////console.log(feature.properties, countrySchools.some((school) => school.name === feature
                     //      .properties.name))
                     return countrySchools.some((school) => school.countryName === feature.properties
                         .name)
                 })
-                //console.log("connected: ", connectedSchools)
+                //////console.log("connected: ", connectedSchools)
                 connectedSchools = connectedSchools.map((country) => {
-                    console.log(country.properties["hc-key"])
+                    ////console.log(country.properties["hc-key"])
                     return [country.properties["hc-key"], countrySchools.find((school) => school
                         .countryName ===
                         country.properties.name).value]
                 })
-                // console.log("connectedSchools: ", connectedSchools)
+                // //console.log("connectedSchools: ", connectedSchools)
                 return connectedSchools
             }
         }
@@ -302,6 +413,12 @@
 
     #map {
         height: 100%;
+        width: 100%;
+    }
+
+    v-map {
+        min-width: 100%;
+        min-height: 100%;
     }
 
     .map {

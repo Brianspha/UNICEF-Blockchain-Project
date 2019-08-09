@@ -65,9 +65,14 @@
               <router-view></router-view>
             </v-flex>
           </v-layout>
-          <v-btn bottom color="skyblue" dark fab fixed right @click="dialog = !dialog">
-            <v-icon>error_outline</v-icon>
-          </v-btn>
+          <v-tooltip top>
+            <template v-slot:activator="{ on }">
+              <v-btn bottom color="skyblue" dark fab fixed right @click="" v-on="on">
+                <v-icon>person_add</v-icon>
+              </v-btn>
+            </template>
+            <span>Login/SignUp</span>
+          </v-tooltip>
         </v-container>
       </v-content>
     </main>
@@ -86,18 +91,11 @@
       fullPage: true,
       isLoading: false,
       items: [{
-          icon: 'find_in_page',
-          text: 'View Connected Schools',
-          to: "/ViewSchools",
-          render: true
-        },
-        {
-          icon: 'find_in_page',
-          text: 'Landing',
-          to: "/Landing",
-          render: true
-        }
-      ],
+        icon: 'find_in_page',
+        text: 'View Connected Schools',
+        to: "/ViewSchools",
+        render: true
+      }],
     }),
     mounted() {
       this.watchForAccountChanges()
@@ -105,7 +103,22 @@
     props: {
       source: String
     },
+    beforeMount(){
+      this.checkUserType();
+    },
     methods: {
+      checkUserType(){
+        var toPush=[
+      {
+        icon: 'border_color',
+        text: 'Register Schools',
+        to: "/RegisterSchools",
+        render: true
+      }]
+      toPush.forEach(menuItem => {
+        this.items.push(menuItem)
+      });
+      },
       watchForAccountChanges() {
         let tempThis = this
         window.ethereum.on('accountsChanged', function (accounts) {
