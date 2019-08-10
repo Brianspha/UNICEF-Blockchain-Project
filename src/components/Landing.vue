@@ -40,14 +40,21 @@
                                 </v-map>
                             </v-tab-item>
                             <v-tab-item style="height:1024px">
-                                <highcharts :options="DetailsOptions" class="map">
+                                <highcharts :options="DetailsOptions">
                                 </highcharts>
-
+                                <highcharts :options="ispOptions">
+                                </highcharts>
+                            </v-tab-item>
+                            <v-tab-item style="height:1024px">
+                                <highcharts :options="activityOptions">
+                                </highcharts>
                             </v-tab-item>
                         </v-tabs-items>
                     </v-card>
                 </v-dialog>
             </v-layout>
+            <loading :active.sync="isLoading" :can-cancel="false" :is-full-page="fullPage">
+            </loading>
         </v-container>
     </v-app>
 </template>
@@ -68,9 +75,11 @@
         Icon,
         icon
     } from 'leaflet'
+    import InfiniteLoading from 'vue-infinite-loading';
     import iconUrl from 'leaflet/dist/images/marker-icon.png'
     import shadowUrl from 'leaflet/dist/images/marker-shadow.png'
     import reverseGeoCoder from 'fast-reverse-geocoder'
+    import Loading from 'vue-loading-overlay';
     export default {
         components: {
             'v-map': Vue2Leaflet.LMap,
@@ -82,6 +91,7 @@
             'v-icondefault': Vue2Leaflet.LIconDefault,
             'v-marker': Vue2Leaflet.LMarker,
             'v-popup': Vue2Leaflet.LPopup,
+            Loading
         },
         data() {
             return {
@@ -89,6 +99,7 @@
                 sheet: false,
                 mapOptions: {},
                 dialog: false,
+                limit: 50,
                 clickedCountry: null,
                 schools: [],
                 url: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
@@ -117,9 +128,20 @@
                     },
                     {
                         title: "Infographics"
+                    },
+                    {
+                        title: "Activity"
                     }
                 ],
-                tabs: null
+                tabs: null,
+                isLoading: false,
+                fullPage: true,
+                months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September',
+                    'October', 'November', 'December'
+                ],
+                selectedCountry: '',
+                activityOptions: {},
+                ispOptions: {}
             }
         },
         watch: {
@@ -139,10 +161,10 @@
                         map: 'myMapName'
                     },
                     title: {
-                        text: 'Schools connected to the internet by country'
+                        text: 'Schools under the supervision of UNICEF '
                     },
                     subtitle: {
-                        text: 'Source map: World Map showing Schools connected to the internet by country provided by UNICEF</a>'
+                        text: 'Source map: World Map showing the number of schools who are connected to the internet through the aid of UNICEF</a>'
                     },
                     mapNavigation: {
                         enabled: true,
@@ -166,30 +188,20 @@
                         series: {
                             point: {
                                 events: {
-                                    click: function () {
+                                    click: function (e) {
+                                        console.log("country: ", this.name)
+                                        This.isLoading = true
                                         This.dialog = true
                                         This.country = this.name
-                                        This.generateDetails()
-                                        This.findCountrySchools()
+                                        This.getISPDetails(this.name)
+                                        This.getISPActivity(this.name)
+                                        This.getISPConnectionSpeeds(this.name)
+                                        This.findCountrySchools(this.name)
+                                        This.isLoading = false
                                     }
                                 }
                             }
                         }
-                    },
-                    drilldown: {
-                        activeDataLabelStyle: {
-                            color: '#FFFFFF',
-                            textDecoration: 'none',
-                            textOutline: '1px #000000'
-                        },
-                        drillUpButton: {
-                            relativeTo: 'plotBox',
-                            position: {
-                                x: 70,
-                                y: 280
-                            }
-                        },
-                        series: [{}]
                     },
                     series: [{
                         legend: {
@@ -199,14 +211,103 @@
                             duration: 1000
                         },
                         data: this.getConnectedSchools(),
-                        name: 'Total number of Schools connected to the Internet ',
+                        name: 'Total number of Schools ',
                         tooltip: {
-                            pointFormat: '{point.value}'
+                            pointFormat: '{point.value}  in {point.name}<br><br> Click for more details'
                         }
                     }]
                 }
             },
-            findCountrySchools() {
+            getISPActivity(country) {
+                let This = this
+                this.activityOptions = {
+                    chart: {
+                        type: 'column'
+                    },
+                    title: {
+                        text: 'Charts Showing activity related to ISP, Donors and UNICEF'
+                    },
+                    subtitle: {
+                        text: 'Source: UNICEF'
+                    },
+                    xAxis: {
+                        categories: [
+                            this.months[new Date().getMonth()]
+                        ],
+                        crosshair: true
+                    },
+                    yAxis: {
+                        min: 0,
+                        title: {
+                            text: 'No of Schools Connected to the Internet by ISP '
+                        }
+                    },
+                    tooltip: {
+                        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                            '<td style="padding:0"><b>{point.y:.1f}</b></td></tr>',
+                        footerFormat: '</table>',
+                        shared: true,
+                        useHTML: true
+                    },
+                    plotOptions: {
+                        column: {
+                            pointPadding: 0.2,
+                            borderWidth: 0
+                        }
+                    },
+                    series: This.getISPForSchools(country)
+                }
+            },
+            getISPConnectionSpeeds(country) {
+                let This = this
+                this.ispOptions = {
+                    chart: {
+                        type: 'bar',
+                        marginLeft: 100
+                    },
+
+                    title: {
+                        text: 'Average Speed by Internet Service Provider (ISP)',
+                        align: 'left',
+                        x: 90
+                    },
+
+                    credits: {
+                        enabled: false
+                    },
+
+                    xAxis: {
+                        categories: This.getISPForCountry(country),
+                        labels: {
+                            enabled: true
+                        }
+                    },
+
+                    yAxis: {
+                        allowDecimals: false,
+                        title: {
+                            text: null
+                        },
+                        min: 0,
+                        max: 10
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    series: This.getAverageISPConnectionSpeed(country)
+                }
+            },
+            getAverageISPConnectionSpeed(country) {
+                return [{
+                    "name": "Cell C",
+                    data: [12]
+                }]
+            },
+            getISPForCountry(country) {
+                return ['Cell C']
+            },
+            findCountrySchools(countryName) {
                 var schools = require('../json/schools.json')
                 this.schools = []
                 let This = this
@@ -224,7 +325,12 @@
                         ////console.log("equal")
                         return
                     }
+                    var country = reverseGeoCoder.search(schools.GIS_Longitude.toString().replace(/ /g, ''),
+                        schools.GIS_Latitude.toString().replace(/ /g, ''))
                     //console.log(reverseGeoCoder.search(schools.GIS_Longitude.toString().replace(/ /g,'')))
+                    if (!country || country.name !== countryName) {
+                        return
+                    }
                     this.center = [schools.GIS_Latitude, schools.GIS_Longitude]
                     this.schools.push({
                         name: schools.Official_Institution_Name,
@@ -238,96 +344,106 @@
                             schools.GIS_Latitude.toString().replace(/ /g, ''),
                             schools.GIS_Longitude.toString().replace(/ /g, '')
                         ),
-                        country: reverseGeoCoder.search(schools.GIS_Longitude.toString().replace(/ /g,
-                                ''),
-                            schools
-                            .GIS_Latitude.toString().replace(/ /g, ''))
+                        country: country
                     })
                 })
                 return this.schools
             },
-            generateDetails() {
+            getISPDetails(country) {
                 let This = this
                 this.DetailsOptions = {
                     chart: {
-                        type: 'packedbubble',
-                        height: '100%'
+                        type: 'column'
                     },
                     title: {
-                        text: 'Schools Connected to the Internet By Internet Service Provider (ISP)'
+                        text: 'Schools Connected by ISP'
                     },
-                    tooltip: {
-                        useHTML: true,
-                        pointFormat: '<b>School Name:</b>{point.schoolName} <br> <b>Address:</b> {point.schoolAddress} <br> <b>ConnectionSpeed:</b> {point.speed}'
+                    subtitle: {
+                        text: 'Source: UNICEF'
                     },
-                    plotOptions: {
-                        packedbubble: {
-                            minSize: '20%',
-                            maxSize: '100%',
-                            zMin: 0,
-                            zMax: 1000,
-                            layoutAlgorithm: {
-                                gravitationalConstant: 0.05,
-                                splitSeries: true,
-                                seriesInteraction: false,
-                                dragBetweenSeries: true,
-                                parentNodeLimit: true
-                            },
-                            dataLabels: {
-                                enabled: true,
-                                format: '{point.name}',
-                                filter: {
-                                    property: 'y',
-                                    operator: '>',
-                                    value: 250
-                                },
-                                style: {
-                                    color: 'black',
-                                    textOutline: 'none',
-                                    fontWeight: 'normal'
-                                }
-                            }
+                    xAxis: {
+                        categories: [
+                            this.months[new Date().getMonth()]
+                        ],
+                        crosshair: true
+                    },
+                    yAxis: {
+                        min: 0,
+                        title: {
+                            text: 'No of Schools Connected to the Internet by ISP '
                         }
                     },
-                    series: This.getISPForSchools()
+                    tooltip: {
+                        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                            '<td style="padding:0"><b>{point.y:.1f}</b></td></tr>',
+                        footerFormat: '</table>',
+                        shared: true,
+                        useHTML: true
+                    },
+                    plotOptions: {
+                        column: {
+                            pointPadding: 0.2,
+                            borderWidth: 0
+                        }
+                    },
+                    series: This.getISPForSchools(country)
                 }
             },
-            getISPForSchools() {
-                var ispData = require('../json/isp.json')
-                var ispFormated = []
-                ispData.forEach((isp) => {
-                    //    //console.log(!ispFormated.some((ispformated) => ispformated.name ===isp.isp))
-                    if (ispFormated.length === 0 || !ispFormated.some((ispformated) => ispformated.name === isp
-                            .isp)) {
-                        ispFormated.push({
-                            name: isp.isp,
-                            data: [{
-                                name: isp.name,
-                                value: isp.value,
-                                schoolName: "Some school",
-                                schoolAddress: "Some School Address",
-                                speed:12
-                            }]
-                        })
+            getISPForSchools(countryName) {
+                this.isLoading = true
+                var schools = require('../json/schools.json')
+                var schoolsFormated = []
+                var count = 0
+                schools.forEach(school => {
+                    if (!school.GIS_Latitude || !school.GIS_Longitude) {
+                        return
+                    }
+                    school.GIS_Latitude = school.GIS_Latitude.toString().replace(/,/g, '.')
+                        .toString()
+                        .replace(/ /g, '')
+                    school.GIS_Longitude = school.GIS_Longitude.toString().replace(/,/g, '.')
+                        .toString()
+                        .replace(/ /g, '')
+                    if (school.GIS_Latitude === school.GIS_Longitude) {
+                        ////console.log("equal")
+                        return
+                    }
+                    // ////console.log(school)
+                    var country = reverseGeoCoder.search(school.GIS_Longitude, school.GIS_Latitude)
+                    //console.log(country)
+                    if (!country) {
+                        return
+                    }
+                    if (country.name === countryName && !school.name && count <= this.limit) {
+                        if (!schoolsFormated.some((skwl) => skwl.name === "Not Connected")) {
+                            schoolsFormated.push({
+                                name: "Not Connected",
+                                speed: 0,
+                                data: [1]
+                            })
+                        } else {
+                            schoolsFormated = schoolsFormated.map((skwl) => {
+                                if (skwl.name === "Not Connected") {
+                                    skwl.data[0] += 1
+                                }
+                                return skwl
+                            })
+                        }
+
                     } else {
-                        ispFormated = ispFormated.map((ispformated) => {
-                            if (ispformated.name === isp.isp) {
-                                ispformated.data.push({
-                                    name: isp.name,
-                                    value: isp.value,
-                                    schoolName: "Some school",
-                                    schoolAddress: "Some School Address",
-                                    speed:12
-                                })
-                                return ispformated
-                            } else {
-                                return ispformated
+                        schoolsFormated = schoolsFormated.map((skwl) => {
+                            if (skwl.name === school.name) {
+                                skwl.data[0] += 1
                             }
+                            return skwl
                         })
                     }
-                })
-                console.log(ispFormated)
-                return ispFormated
+                });
+                console.log(schoolsFormated.length)
+                this.isLoading = false
+                //console.log(ispFormated)
+                return schoolsFormated
             },
             getCountriesSchools() {
                 var schools = require('../json/schools.json')
@@ -348,16 +464,22 @@
                         }
                         // ////console.log(school)
                         var country = reverseGeoCoder.search(school.GIS_Longitude, school.GIS_Latitude)
-                        //////console.log(country)
+                        //console.log(country)
                         if (!country) {
                             return
                         }
-                        if (!countries.some((county => county.name !== country.name))) {
+                        if (!countries.some((county => county[0] === country.name))) {
                             countries.push([country.name, 1])
+                            console.log("created entry: ", country.name)
+                            console.log(countries)
                         } else {
-                            countries.map((countryData) => {
-                                if (countryData[0] == country.name) {
+                            countries = countries.map((countryData) => {
+                                //console.log("searching: ",country.name,countryData[0])
+                                if (countryData[0] === country.name) {
+                                    console.log("updated entry: ", country.name)
                                     countryData[1] += 1
+                                    return countryData
+                                } else {
                                     return countryData
                                 }
                             })
@@ -376,7 +498,7 @@
                         y: 19,
                         color: "green",
                         value: country[1],
-                        countryName: country[0]
+                        country: country[0]
                     })
                 })
                 ////console.log(newschoolsData)
@@ -390,14 +512,14 @@
                 var connectedSchools = map.features.filter((feature) => {
                     // ////console.log(feature.properties, countrySchools.some((school) => school.name === feature
                     //      .properties.name))
-                    return countrySchools.some((school) => school.countryName === feature.properties
+                    return countrySchools.some((school) => school.country === feature.properties
                         .name)
                 })
                 //////console.log("connected: ", connectedSchools)
                 connectedSchools = connectedSchools.map((country) => {
                     ////console.log(country.properties["hc-key"])
                     return [country.properties["hc-key"], countrySchools.find((school) => school
-                        .countryName ===
+                        .country ===
                         country.properties.name).value]
                 })
                 // //console.log("connectedSchools: ", connectedSchools)
@@ -422,6 +544,6 @@
     }
 
     .map {
-        min-height: 80%;
+        min-height: 100%;
     }
 </style>

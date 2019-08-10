@@ -23,7 +23,7 @@
                             <v-toolbar-title>Schools Database</v-toolbar-title>
                             <v-spacer></v-spacer>
                         </v-toolbar>
-                        <v-flex class="containerflex">
+                        <v-flex class="containerflex" style="height:900px;">
                             <virtual-list class="list" :size="size" :remain="remain" :start="start" :item="item"
                                 :itemcount="itemCount" :itemprops="getItemprops">
                             </virtual-list>
@@ -67,7 +67,7 @@
                 isLoading: false,
                 fullPage: true,
                 itemComponent: item,
-                remain: 100,
+                remain:20,
                 size: 80,
                 itemCount: 0,
                 start: 0,
@@ -85,7 +85,7 @@
                 let This = this
             },
             itemCount: async function () {
-                
+
             }
         },
         methods: {
