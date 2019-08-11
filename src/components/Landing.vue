@@ -48,6 +48,8 @@
                             <v-tab-item style="height:1024px">
                                 <highcharts :options="activityOptions">
                                 </highcharts>
+                                <highcharts :options="ispDonorOptions">
+                                </highcharts>
                             </v-tab-item>
                         </v-tabs-items>
                     </v-card>
@@ -141,7 +143,8 @@
                 ],
                 selectedCountry: '',
                 activityOptions: {},
-                ispOptions: {}
+                ispOptions: {},
+                ispDonorOptions: {}
             }
         },
         watch: {
@@ -189,7 +192,7 @@
                             point: {
                                 events: {
                                     click: function (e) {
-                                        console.log("country: ", this.name)
+                                        //("country: ", this.name)
                                         This.isLoading = true
                                         This.dialog = true
                                         This.country = this.name
@@ -258,6 +261,50 @@
                     },
                     series: This.getISPForSchools(country)
                 }
+                this.ispDonorOptions = {
+                    chart: {
+                        type: 'packedbubble',
+                        height: '100%'
+                    },
+                    title: {
+                        text: 'Graph shwoing donors who provide funding to ISP to provide Internet Connection'
+                    },
+                    tooltip: {
+                        useHTML: true,
+                        pointFormat: '<b>School ISP Name:</b>{point.name} <br> <b>Amount (Eth):</b> {point.value} <br> <b>ConnectionSpeed:</b> {point.speed}'
+                    },
+                    plotOptions: {
+                        packedbubble: {
+                            minSize: '20%',
+                            maxSize: '100%',
+                            zMin: 0,
+                            zMax: 1000,
+                            layoutAlgorithm: {
+                                gravitationalConstant: 0.05,
+                                splitSeries: true,
+                                seriesInteraction: false,
+                                dragBetweenSeries: true,
+                                parentNodeLimit: true
+                            },
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.name}',
+                                filter: {
+                                    property: 'y',
+                                    operator: '>',
+                                    value: 250
+                                },
+                                style: {
+                                    color: 'black',
+                                    textOutline: 'none',
+                                    fontWeight: 'normal'
+                                }
+                            }
+                        }
+                    },
+                    series: This.getISPDonorsForCountry()
+                }
+
             },
             getISPConnectionSpeeds(country) {
                 let This = this
@@ -298,14 +345,26 @@
                     series: This.getAverageISPConnectionSpeed(country)
                 }
             },
-            getAverageISPConnectionSpeed(country) {
+            getAverageISPConnectionSpeed(countryName) {
                 return [{
                     "name": "Cell C",
                     data: [12]
                 }]
             },
-            getISPForCountry(country) {
+            getISPForCountry(countryName) {
                 return ['Cell C']
+            },
+            getISPDonorsForCountry(countryName) {
+                //@dev query smart contract
+                var data = [{
+                    name: 'No Donors',
+                    data: [{
+                        name: 'No ISP',
+                        value: 0,
+                        speed: 0
+                    }]
+                }]
+                return data
             },
             findCountrySchools(countryName) {
                 var schools = require('../json/schools.json')
@@ -440,7 +499,7 @@
                         })
                     }
                 });
-                console.log(schoolsFormated.length)
+                //console.log(schoolsFormated.length)
                 this.isLoading = false
                 //console.log(ispFormated)
                 return schoolsFormated
@@ -470,13 +529,13 @@
                         }
                         if (!countries.some((county => county[0] === country.name))) {
                             countries.push([country.name, 1])
-                            console.log("created entry: ", country.name)
-                            console.log(countries)
+                           // console.log("created entry: ", country.name)
+                           // console.log(countries)
                         } else {
                             countries = countries.map((countryData) => {
                                 //console.log("searching: ",country.name,countryData[0])
                                 if (countryData[0] === country.name) {
-                                    console.log("updated entry: ", country.name)
+                                  //  console.log("updated entry: ", country.name)
                                     countryData[1] += 1
                                     return countryData
                                 } else {
