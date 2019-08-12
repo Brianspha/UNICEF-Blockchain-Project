@@ -13,15 +13,15 @@
           <v-list-group v-else-if="item.children" :key="item.text" v-model="item.model"
             :prepend-icon="item.model ? item.icon : item['icon-alt']" append-icon="">
             <template v-slot:activator>
-              <v-list-tile>
-                <v-list-tile-content>
+              <v-list-tile v-ripple>
+                <v-list-tile-content v-ripple>
                   <v-list-tile-title>
                     {{ item.text }}
                   </v-list-tile-title>
                 </v-list-tile-content>
               </v-list-tile>
             </template>
-            <v-list-tile v-for="(child, i) in item.children" :key="i">
+            <v-list-tile v-for="(child, i) in item.children" :key="i" v-ripple>
               <v-list-tile-action v-if="child.render &&child.icon" :to="child.to">
                 <v-icon>{{ child.icon }}</v-icon>
               </v-list-tile-action>
@@ -67,7 +67,7 @@
           </v-layout>
           <v-tooltip top>
             <template v-slot:activator="{ on }">
-              <v-btn bottom color="skyblue" dark fab fixed right @click="dialog=true" v-on="on">
+              <v-btn bottom color="skyblue" v-ripple dark fab fixed right @click="dialog=true" v-on="on">
                 <v-icon>person_add</v-icon>
               </v-btn>
             </template>
@@ -139,7 +139,7 @@
                 </v-card>
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn color="primary" text @click="dialog = false; login(true)">
+                  <v-btn color="primary" v-ripple text @click="dialog = false; login(true)">
                     Create
                   </v-btn>
                 </v-card-actions>
@@ -147,19 +147,20 @@
               <v-tab-item value='tab-1'>
                 <v-form ref="form" v-model="valid" :lazy-validation="lazy">
                   <v-card flat align-center justify-center row fill-height>
-                    <v-text-field label="Private Key" hint="e.g. 0xc0ffee..." v-model="privateKey"
+                    <v-text-field label="Private Key" hint="e.g. 832eaaaaaa..." v-model="privateKey"
                       :rules="privateKeyRules"></v-text-field>
                   </v-card>
                   <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn :disabled="!valid" color="success" class="mr-4" @click="validate;login(false)">
+                    <v-btn v-ripple :disabled="!valid" color="success" class="mr-4" @click="validate;login(false)">
                       Login
                     </v-btn>
                   </v-card-actions>
                 </v-form>
               </v-tab-item>
             </v-tabs-items>
-
+            <loading :active.sync="isLoading" :can-cancel="false" :is-full-page="fullPage">
+            </loading>
           </v-card>
         </v-dialog>
       </div>
@@ -168,6 +169,8 @@
 </template>
 
 <script>
+  import Loading from 'vue-loading-overlay';
+
   import Portis from "@portis/web3";
   import Web3 from 'web3';
   import EmbarkJS from "../embarkArtifacts/embarkjs";
@@ -178,8 +181,12 @@
     clearInterval
   } from 'timers';
   export default {
+    components: {
+      Loading
+    },
     data() {
       return {
+        fullPage: true,
         privateKey: '',
         lazy: false,
         privateKeyRules: [
@@ -216,7 +223,7 @@
       this.Portis = new Portis('0705023c-3e90-405e-a0c3-6ab9ad4be7ed', this.localNode, {
         scope: ["email"]
       }, true);
-      this.Portis.config.registerPageByDefault = true
+      this.Portis.config.registerPageByDefault = false
       console.log(this.Portis.config.registerPageByDefault)
       this.web3 = new Web3(this.Portis.provider);
       EmbarkJS.Providers = this.web3
@@ -282,17 +289,23 @@
         })
       },
       login(isNew) {
-        this.loginRequest=true
+        this.loginRequest = true
+        this.isLoading = true
         if (isNew) {
-          this.Portis.showPortis()
+          this.Portis.importWallet(this.privateKey).then((results, error) => {
+            console.log(error, results)
+          }).catch((err) => {
+            console.log(error)
+          });
         } else {
-
+          this.Portis.showPortis()
         }
         console.log(this.Portis)
         this.Portis.onLogin((walletAddress, email) => {
           this.SecureLS.set('loggedIn', true);
           this.SecureLS.set('walletAddress', walletAddress);
           this.SecureLS.set('emailAddress', email);
+          this.isLoading = false
         })
         this.Portis.onLogout(() => {
           console.log('User logged out');

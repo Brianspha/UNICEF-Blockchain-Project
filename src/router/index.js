@@ -4,6 +4,7 @@ import ViewSchools from '../components/ViewSchools.vue'
 import Landing from '../components/Landing.vue'
 import RegisteredSchools from '../components/RegisterSchools.vue'
 import RegistrationView from '../components/RegistrationView.vue'
+import ProfileView from '../components/ProfileView.vue'
 
 Vue.use(Router)
 
@@ -26,6 +27,11 @@ export default new Router({
             path: '/RegistrationView',
             name: 'registrationview',
             component: RegistrationView
+        },
+        {
+            path: '/ProfileView',
+            name: 'profileView',
+            component: ProfileView
         }
     ],
     mode: "history"
