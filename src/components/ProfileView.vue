@@ -54,7 +54,7 @@
                                             <v-btn :disabled="!valid" color="success" class="mr-4" @click="validate">
                                                 Donate
                                             </v-btn>
-                                            <v-btn color="primary" @click="donate=false">
+                                            <v-btn color="#7EC0EE" @click="donate=false">
                                                 Close
                                             </v-btn>
                                         </v-form>
@@ -184,18 +184,43 @@
                                             <v-checkbox v-model="checkbox"
                                                 :rules="[v => !!v || 'You must agree to continue!']"
                                                 label="Agree to Terms and Conditions?" required></v-checkbox>
-                                            <v-btn color="primary" @click="ispTCS=true;">
+                                            <v-btn color="#7EC0EE" @click="ispTCS=true;">
                                                 Terms and Conditions
                                             </v-btn>
                                             <v-btn :disabled="!valid" color="success" class="mr-4" @click="validate">
                                                 Register
                                             </v-btn>
-                                            <v-btn color="primary" @click="ispRegistration=false;valid=true">
+                                            <v-btn color="#7EC0EE" @click="ispRegistration=false;valid=true">
                                                 Close
                                             </v-btn>
                                         </v-form>
                                     </v-layout>
                                 </v-card-text>
+                            </v-card>
+                        </v-dialog>
+                    </v-layout>
+                </template>
+
+                <template>
+                    <v-layout justify-center>
+                        <v-dialog v-model="newSchoolTCS" persistent max-width="600px">
+                            <v-card>
+                                <v-card-title>
+                                    <span class="headline">Terms and Conditions</span>
+                                </v-card-title>
+                                <v-card-text>
+                                    <v-container grid-list-md>
+                                        <v-layout wrap>
+                                            By Registering {{schoolName}} you agree that the information provided is
+                                            legitamite click register to continue
+                                        </v-layout>
+                                    </v-container>
+                                </v-card-text>
+                                <v-card-actions>
+                                    <v-spacer></v-spacer>
+                                    <v-btn color="#7EC0EE " text @click="registerasSchool()">Register</v-btn>
+                                    <v-btn color="#7EC0EE " text @click="newSchoolTCS = false">Close</v-btn>
+                                </v-card-actions>
                             </v-card>
                         </v-dialog>
                     </v-layout>
@@ -217,7 +242,7 @@
                                 </v-card-text>
                                 <v-card-actions>
                                     <v-spacer></v-spacer>
-                                    <v-btn color="blue darken-1" text @click="ispTCS = false">Close</v-btn>
+                                    <v-btn color="#7EC0EE " text @click="ispTCS = false">Close</v-btn>
                                 </v-card-actions>
                             </v-card>
                         </v-dialog>
@@ -249,7 +274,7 @@
                                                     @click="validate; updateConnectionSpeed()">
                                                     Update
                                                 </v-btn>
-                                                <v-btn color="primary" @click="updateCountrySpeed=false;valid=true">
+                                                <v-btn color="#7EC0EE" @click="updateCountrySpeed=false;valid=true">
                                                     Close
                                                 </v-btn>
                                             </v-form>
@@ -305,8 +330,56 @@
                                 </v-card-text>
                                 <v-card-actions>
                                     <v-spacer></v-spacer>
-                                    <v-btn color="blue darken-1" text @click="ispUpdate = false">Close</v-btn>
+                                    <v-btn color="#7EC0EE" text @click="ispUpdate = false">Close</v-btn>
                                 </v-card-actions>
+                            </v-card>
+                        </v-dialog>
+                    </v-layout>
+                </template>
+
+                <template>
+                    <v-layout justify-center>
+                        <v-dialog v-model="isSchoolRegistration" persistent max-width="600px">
+                            <v-card>
+                                <v-card-title>
+                                    <span class="headline">School Registration</span>
+                                </v-card-title>
+                                <v-card-text>
+                                    <v-container grid-list-md>
+                                        <v-layout wrap>
+                                            <v-form ref="form" v-model="valid" lazy-validation style="width:100%;">
+                                                <v-text-field v-model="schoolName" :rules="schoolNameRules"
+                                                    label="School Name" hint="e.g. AJ Mwelase Secondary School"
+                                                    required>
+                                                </v-text-field>
+                                                <v-text-field v-model="schoolAddress" :rules="schoolAddressRules"
+                                                    label="School Postal Address"
+                                                    hint="e.g. PO BOX X123  12 Ntuli Street Lamontville Durban South Africa"
+                                                    required>
+                                                </v-text-field>
+                                                <v-text-field v-model="schoolEmail" :rules="schoolEmailRules"
+                                                    label="School Email Address" hint="AJMwelase@gov.za" required>
+                                                </v-text-field>
+                                                <v-text-field v-model="latitude" :rules="latitudeRules"
+                                                    label="School Latitude Position" hint="e.g. -33.5532" required>
+                                                </v-text-field>
+                                                <v-text-field v-model="Longitude" :rules="LongitudeRules"
+                                                    label="School Longitude Position" hint="e.g. -33.5532" required>
+                                                </v-text-field>
+                                                <v-checkbox v-model="checkbox"
+                                                    :rules="[v => !!v || 'You must agree to continue!']"
+                                                    label="Do you agree?" required></v-checkbox>
+                                                <v-btn :disabled="!valid" color="success" class="mr-4"
+                                                    @click="validate; newSchoolTCS=true">
+                                                    Update
+                                                </v-btn>
+                                                <v-btn color="#7EC0EE" @click="isSchoolRegistration=false;valid=true">
+                                                    Close
+                                                </v-btn>
+                                            </v-form>
+                                        </v-layout>
+                                    </v-container>
+                                </v-card-text>
                             </v-card>
                         </v-dialog>
                     </v-layout>
@@ -373,7 +446,7 @@
                                     </v-hover>
                                 </v-flex>
 
-                                <v-flex xs4 v-ripple @click="showMenu(6)" v-if="isISP">
+                                <v-flex xs4 v-ripple @click="showMenu(6)">
                                     <v-hover v-slot:default="{ hover }" close-delay="200">
                                         <v-card :elevation="hover ? 16 : 2" class="mx-auto" height="200">
                                             <v-layout align-center justify-center column fill-height>Update Connection
@@ -383,12 +456,19 @@
                                     </v-hover>
                                 </v-flex>
 
-
+                                <v-flex xs4 v-ripple @click="showMenu(7)">
+                                    <v-hover v-slot:default="{ hover }" close-delay="200">
+                                        <v-card :elevation="hover ? 16 : 2" class="mx-auto" height="200">
+                                            <v-layout align-center justify-center column fill-height>Register as School
+                                            </v-layout>
+                                        </v-card>
+                                    </v-hover>
+                                </v-flex>
                             </v-layout>
                         </v-card>
                     </v-flex>
                 </v-layout>
-                    <vue-snotify></vue-snotify>
+                <vue-snotify></vue-snotify>
                 <loading :active.sync="isLoading" :can-cancel="false" :is-full-page="fullPage">
                 </loading>
             </v-container>
@@ -411,6 +491,33 @@
                 userAddress: '',
                 valid: true,
                 dataBundles: -1,
+                selectedCountry: '',
+                countries: [],
+                schoolEmail: '',
+                schoolEmailRules: [
+                    v => !!v || 'E-mail is required',
+                    v => /.+@.+\..+/.test(v) || 'School E-mail must be valid',
+                ],
+                latitude: '',
+                latitudeRules: [
+                    v => !!v || 'Latitude position for school is required',
+                    v => (v && !isNaN(v)) || 'Invalid Latitude number valid number is in this form e.g. -33.012'
+                ],
+                Longitude: '',
+                LongitudeRules: [
+                    v => !!v || 'Longitude position for school is required',
+                    v => (v && !isNaN(v)) || 'Invalid Longitude number valid number is in this form e.g. -33.012'
+                ],
+                schoolName: '',
+                schoolNameRules: [
+                    v => !!v || 'School name is required',
+                    v => (v && v.length > 1) || 'School name si required to have more than 1 character'
+                ],
+                schoolAddress: '',
+                schoolAddressRules: [
+                    v => !!v || 'School Postal Address is required',
+                    v => (v && v.length > 5) || 'School Postal required to have more than 1 character'
+                ],
                 dataBundlesRules: [
                     v => !!v || 'New Data bundles value is required',
                     v => (v && !isNaN(v)) || 'Invalid New Speed connection must be a valid Number E.g. 2000'
@@ -433,7 +540,7 @@
                 ispEmail: '',
                 ispEmailRules: [
                     v => !!v || 'E-mail is required',
-                    v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
+                    v => /.+@.+\..+/.test(v) || 'ISP E-mail must be valid',
                 ],
                 tokenAddress: '',
                 tokenAddressRules: [
@@ -482,7 +589,10 @@
                 myDonations: false,
                 ispRegistration: false,
                 ispUpdate: false,
-                isISP: true
+                isISP: true,
+                isSchoolRegistration: false,
+                newSchoolTCS: false
+
 
             }
         },
@@ -507,6 +617,9 @@
                         break
                     case 6:
                         this.ispUpdate = true
+                        break
+                    case 7:
+                        this.isSchoolRegistration = true
                         break
                 }
             },
@@ -533,13 +646,17 @@
             },
             updateConnectionSpeed(index) {
 
+            },
+            registerasSchool(){
+                this.isLoading=true
             }
+
         }
 
     }
 </script>
 
-<style>
-@import "~vue-snotify/styles/material.css"
 
+<style>
+    @import "~vue-snotify/styles/material.css"
 </style>

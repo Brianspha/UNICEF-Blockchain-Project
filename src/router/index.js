@@ -5,6 +5,7 @@ import Landing from '../components/Landing.vue'
 import RegisteredSchools from '../components/RegisterSchools.vue'
 import RegistrationView from '../components/RegistrationView.vue'
 import ProfileView from '../components/ProfileView.vue'
+import ActivityView from '../components/ActivityView.vue'
 
 Vue.use(Router)
 
@@ -32,6 +33,11 @@ export default new Router({
             path: '/ProfileView',
             name: 'profileView',
             component: ProfileView
+        },
+        {
+            path: '/ActivityView',
+            name: 'activityView',
+            component: ActivityView
         }
     ],
     mode: "history"

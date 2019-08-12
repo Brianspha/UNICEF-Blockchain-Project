@@ -67,11 +67,19 @@
           </v-layout>
           <v-tooltip top>
             <template v-slot:activator="{ on }">
-              <v-btn bottom color="skyblue" v-ripple dark fab fixed right @click="dialog=true" v-on="on">
+              <v-btn bottom color="sky#7EC0EE" v-ripple dark fab fixed right @click="dialog=true" v-on="on">
                 <v-icon>person_add</v-icon>
               </v-btn>
             </template>
             <span>Login/SignUp</span>
+          </v-tooltip>
+          <v-tooltip top>
+            <template v-slot:activator="{ on }">
+              <v-btn bottom color="sky#7EC0EE" v-ripple dark fab fixed left @click="about=true" v-on="on">
+                <v-icon>info</v-icon>
+              </v-btn>
+            </template>
+            <span>About</span>
           </v-tooltip>
         </v-container>
       </v-content>
@@ -81,7 +89,7 @@
         <v-dialog v-model="dialog" width="500">
           <v-card>
             <v-card-title>
-              Login in to Xhuma
+              <b>Login in to Xhuma</b>
             </v-card-title>
             <v-tabs v-model="tab" color="#7EC0EE" centered dark icons-and-text>
               <v-tabs-slider></v-tabs-slider>
@@ -116,7 +124,7 @@
                     available. The Site may not be used in connection with any commercial endeavors except those that
                     are specifically endorsed or approved by us.
                     <br><br>
-                    <b>As a user of the Site, you agree not to:</b>
+                    <b>As a user of the site, you agree not to:</b>
                     <br><br>
                     1. systematically retrieve data or other content from the Site to create or compile, directly or
                     indirectly, a collection, compilation, database, or directory without written permission from
@@ -132,7 +140,7 @@
                     including
                     features that prevent or restrict the use or copying of any Content or enforce limitations on
                     the
-                    use of the Site and/or the Content contained therein.<br>
+                    use of the site and/or the Content contained therein.<br>
                     6. engage in unauthorized framing of or linking to the Site.<br>
 
                   </v-card-text>
@@ -152,6 +160,9 @@
                   </v-card>
                   <v-card-actions>
                     <v-spacer></v-spacer>
+                    <v-btn v-ripple color="#7EC0EE" class="mr-4" @click="privateKeyInfo=true">
+                      Private Key?
+                    </v-btn>
                     <v-btn v-ripple :disabled="!valid" color="success" class="mr-4" @click="validate;login(false)">
                       Login
                     </v-btn>
@@ -163,6 +174,72 @@
             </loading>
           </v-card>
         </v-dialog>
+
+        <template>
+          <v-layout justify-center>
+            <v-dialog v-model="privateKeyInfo" persistent max-width="600px">
+              <v-card>
+                <v-card-title>
+                  <span class="headline">About Private Key</span>
+                </v-card-title>
+                <v-card-text>
+                  <v-container grid-list-md>
+                    <v-layout wrap>
+                      A private key in Ethereum is nothing else than 64 random hex characters. As a short reminder:
+                      Hexadecimal is going from 0 to F, which is 0 to 15 in decimal numbers. So there are 64 random
+                      values between 0 and 15, or 0 to F. That translates to 256 bits or 32 bytes.
+                      <br>
+                      You could literally go in and create your own private key, let’s say 0xFF00FF00FF00FF00FF00.. And
+                      so on. The trick here is to make it really random. So nobody can guess it. And that is why you
+                      should not create your own private key yourself from the top of your head.
+                    </v-layout>
+                  </v-container>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="#7EC0EE" text @click="privateKeyInfo = false">Close</v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+          </v-layout>
+        </template>
+
+        <template>
+          <v-layout justify-center>
+            <v-dialog v-model="about" persistent max-width="600px">
+              <v-card>
+                <v-card-title>
+                  <span class="headline">About</span>
+                </v-card-title>
+                <v-card-text>
+                  <v-container grid-list-md>
+                    <v-layout wrap>
+                      Welcome to UNICEF's real-time data visualization! This project is in its alpha version and is a
+                      continuous work in progress. The data available does not necessarily represent a complete
+                      inventory of a country's school locations and level of Internet connectivity. We are always
+                      looking for more partners to validate (and add!) to our existing datasets.<br><br>Please contact
+                      the
+                      School Mapping team to learn more.
+
+                      Navigating this map:<br><br>This map brings together a wide range of data, including school
+                      location and
+                      other key attributes as well as information on school Internet connectivity, both in terms of
+                      speed (Mbs) and type (2G and 3G). Click on a country to see what information is currently
+                      available and on individual dots to find out more details for a particular school.
+                      <br><br><br>
+                      Note:
+                      Not all data has been independently verified. We also only have partial data for some countries
+                      and are looking for your help to continue filling out this map. </v-layout>
+                  </v-container>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="#7EC0EE" text @click="about = false">Close</v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+          </v-layout>
+        </template>
       </div>
     </template>
   </v-app>
@@ -198,11 +275,18 @@
         fullPage: true,
         isLoading: false,
         items: [{
-          icon: 'find_in_page',
-          text: 'View Connected Schools',
-          to: "/Landing",
-          render: true
-        }],
+            icon: 'find_in_page',
+            text: 'View Connected Schools',
+            to: "/Landing",
+            render: true
+          },
+          {
+            icon: 'compare_arrows',
+            text: 'View Updates',
+            to: "/ActivityView",
+            render: true
+          }
+        ],
         Portis: null,
         web3: null,
         localNode: {
@@ -213,23 +297,13 @@
         SecureLS: new SecureLS(),
         tab: null,
         loginRequest: false,
-        valid: true
+        valid: true,
+        privateKeyInfo: false,
+        about: false
       }
     },
     mounted() {
-      console.log(EmbarkJS.Providers)
-      // EmbarkJS.onReady((err) => {
-      console.log(EmbarkJS)
-      this.Portis = new Portis('0705023c-3e90-405e-a0c3-6ab9ad4be7ed', this.localNode, {
-        scope: ["email"]
-      }, true);
-      this.Portis.config.registerPageByDefault = false
-      console.log(this.Portis.config.registerPageByDefault)
-      this.web3 = new Web3(this.Portis.provider);
-      EmbarkJS.Providers = this.web3
-      EmbarkJS.Providers.eth.getBlockNumber().then((block) => {
-        console.log(block)
-      })
+      this.init()
       this.watchForAccountChanges()
 
       //     })
@@ -241,6 +315,22 @@
       this.checkUserType();
     },
     methods: {
+      init() {
+        console.log(EmbarkJS.Providers)
+        // EmbarkJS.onReady((err) => {
+        console.log(EmbarkJS)
+        this.Portis = new Portis('0705023c-3e90-405e-a0c3-6ab9ad4be7ed', this.localNode, {
+          scope: ["email"]
+        }, true);
+        this.Portis.config.registerPageByDefault = false
+        console.log(this.Portis.config.registerPageByDefault)
+        this.web3 = new Web3(this.Portis.provider);
+        EmbarkJS.Providers = this.web3
+        EmbarkJS.Providers.eth.getBlockNumber().then((block) => {
+          console.log(block)
+        })
+        this.about = true
+      },
       checkUserType() {
         var toPush = [{
           icon: 'border_color',
@@ -291,15 +381,16 @@
       login(isNew) {
         this.loginRequest = true
         this.isLoading = true
+        console.log('isNew: ', isNew)
         if (isNew) {
           this.Portis.importWallet(this.privateKey).then((results, error) => {
             console.log(error, results)
           }).catch((err) => {
             console.log(error)
           });
-        } else {
-          this.Portis.showPortis()
         }
+        console.log("here")
+        this.Portis.showPortis()
         console.log(this.Portis)
         this.Portis.onLogin((walletAddress, email) => {
           this.SecureLS.set('loggedIn', true);

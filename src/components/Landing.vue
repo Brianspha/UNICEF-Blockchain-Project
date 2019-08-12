@@ -264,7 +264,7 @@
                 this.ispDonorOptions = {
                     chart: {
                         type: 'packedbubble',
-                        height: '100%'
+                        height: '50%'
                     },
                     title: {
                         text: 'Graph shwoing donors who provide funding to ISP to provide Internet Connection'
