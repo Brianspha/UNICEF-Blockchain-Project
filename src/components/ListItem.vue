@@ -12,7 +12,7 @@
             <v-tooltip top>
                 <template v-slot:activator="{ on }">
                     <v-btn icon x-smal ripple>
-                        <v-icon color="grey lighten-1" @click="selectedVenue=venue; registerschool(name)" v-on="on">
+                        <v-icon color="grey lighten-1" @click="selectedSchool=name; registerschool(name)" v-on="on">
                             check_circle_outline
                         </v-icon>
                     </v-btn>
@@ -22,7 +22,7 @@
             <v-tooltip top>
                 <template v-slot:activator="{ on }">
                     <v-btn icon x-smal ripple>
-                        <v-icon color="grey lighten-1" @click="selectedVenue=venue;removeSchool()" v-on="on">
+                        <v-icon color="grey lighten-1" @click="selectedVenue=name;removeSchool(name)" v-on="on">
                             remove_circle_outline</v-icon>
                     </v-btn>
                 </template>
@@ -49,10 +49,10 @@
             registerschool() {
 
             },
-            getSchoolInformation(index) {
+            getSchoolInformation(name) {
 
             },
-            removeSchool() {
+            removeSchool(name) {
 
             }
         }

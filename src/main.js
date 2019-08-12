@@ -15,7 +15,16 @@ import Highcharts from 'highcharts'
 import HighchartsVue from 'highcharts-vue'
 import More from 'highcharts/highcharts-more'
 import highchartsFunnel from 'highcharts/modules/funnel'
+import Snotify, {
+  SnotifyPosition
+} from 'vue-snotify'
 
+const options = {
+  toast: {
+    position: SnotifyPosition.leftBottom
+  }
+}
+Vue.use(Snotify, options)
 highchartsFunnel(Highcharts);
 More(Highcharts)
 
