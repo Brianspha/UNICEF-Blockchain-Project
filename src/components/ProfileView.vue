@@ -180,6 +180,9 @@
                                             <v-text-field v-model="ispEmail" :rules="ispEmailRules" label="Email"
                                                 hint="e.g. admin@cellc.com" required>
                                             </v-text-field>
+                                            <model-select :options="countries" label="Country" v-model="selectedCountry"
+                                                placeholder="South Africa">
+                                            </model-select>
                                             <v-spacer></v-spacer>
                                             <v-checkbox v-model="checkbox"
                                                 :rules="[v => !!v || 'You must agree to continue!']"
@@ -547,6 +550,8 @@
                     v => !!v || "Token Address is required",
                     v => (v && v.length === 42) || 'Token address must have 42 characters'
                 ],
+                selectedCountry:'',
+                countries:[],
                 select: null,
                 options: [{
                         value: '1',
@@ -647,8 +652,8 @@
             updateConnectionSpeed(index) {
 
             },
-            registerasSchool(){
-                this.isLoading=true
+            registerasSchool() {
+                this.isLoading = true
             }
 
         }
