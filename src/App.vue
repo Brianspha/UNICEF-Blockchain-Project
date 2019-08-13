@@ -389,9 +389,16 @@
             console.log(error)
           });
         }
-        console.log("here")
-        this.Portis.showPortis()
-        console.log(this.Portis)
+        let This = this
+        this.Portis.showPortis().then((result) => {
+          if (result && result.error) {
+            This.error('Seems like you cancelled the login request')
+            console.error('User abort error:', result.error);
+          } else {
+This.loadMenu();
+          }
+          this.isLoading = false
+        })
         this.Portis.onLogin((walletAddress, email) => {
           this.SecureLS.set('loggedIn', true);
           this.SecureLS.set('walletAddress', walletAddress);
@@ -413,6 +420,24 @@
       },
       resetValidation() {
         this.$refs.form.resetValidation()
+      },
+      success(message) {
+        Swal.fire(
+          'Success',
+          message,
+          'success'
+        )
+      },
+      error(message) {
+        Swal.fire({
+          type: 'error',
+          title: 'Oops...',
+          text: message,
+          allowOutsideClick: true
+        })
+      },
+      loadMenu(){
+
       }
 
     }

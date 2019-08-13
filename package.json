@@ -25,6 +25,7 @@
     "secure-ls": "^1.2.5",
     "sweetalert": "^2.1.2",
     "sweetalert2": "^8.15.0",
+    "sync": "^0.2.5",
     "vue": "^2.6.10",
     "vue-async-data": "^1.0.2",
     "vue-choropleth": "^0.3.1",

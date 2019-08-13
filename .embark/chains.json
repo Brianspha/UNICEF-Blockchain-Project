@@ -1,9 +1,13 @@
 {
   "0x6ef4db78b962e5c3e61e9e0d36e7a03ee1cebe148200b821c7207f796b4b3e91": {
     "contracts": {
-      "0x3ecafab4c02d24b8019c066513345c90a3d9fe0c4e74b6b459fe8b75c5841d06": {
+      "0x6246482c5a4509bf6364d6d67f6f5d477aa5b9d0912b53530ec974d5c16f6774": {
         "name": "SafeMath",
-        "address": "0x2250BbAdde324CbB7cDc6d5F3957446321bB8A74"
+        "address": "0x4D7286F68a728C644D9cB600025a55D0f1134f71"
+      },
+      "0xe477a426ce76322cdc36c7e179ccfd8924af558b2bdb0adc6e1dbbde30266855": {
+        "name": "UNICEF",
+        "address": "0x646b313F64304230615c175592f84D6232479C86"
       }
     }
   }

@@ -1,11 +1,11 @@
 {
   "className": "SafeMath",
   "args": [],
-  "code": "60556023600b82828239805160001a607314601657fe5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a7230582047f2ca84c922ce37c24dc1e5fc524bc3983e8d3d7624e051c6ff97a7e4323d5064736f6c63430005090032",
-  "runtimeBytecode": "73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a7230582047f2ca84c922ce37c24dc1e5fc524bc3983e8d3d7624e051c6ff97a7e4323d5064736f6c63430005090032",
-  "realRuntimeBytecode": "73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a7230582047f2ca84c922ce37c2",
+  "code": "60556023600b82828239805160001a607314601657fe5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a72305820ae3863b97dffda99c8f7ff4d960fda3c87e205b7e70d51bbc23abf434744a54264736f6c63430005090032",
+  "runtimeBytecode": "73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a72305820ae3863b97dffda99c8f7ff4d960fda3c87e205b7e70d51bbc23abf434744a54264736f6c63430005090032",
+  "realRuntimeBytecode": "73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a72305820ae3863b97dffda99c8",
   "linkReferences": {},
-  "swarmHash": "4dc1e5fc524bc3983e8d3d7624e051c6ff97a7e4323d5064736f6c6343000509",
+  "swarmHash": "f7ff4d960fda3c87e205b7e70d51bbc23abf434744a54264736f6c6343000509",
   "gasEstimates": {
     "creation": {
       "codeDepositCost": "17000",
@@ -22,16 +22,17 @@
   },
   "functionHashes": {},
   "abiDefinition": [],
-  "filename": "C:\\Users\\g14m1190\\Documents\\GitHub\\UNICEF-Blockchain-Project\\.embark\\contracts\\tokens\\SafeMath.sol",
+  "filename": "C:/Users/g14m1190/Documents/GitHub/UNICEF-Blockchain-Project/.embark/contracts/tokens/SafeMath.sol",
   "originalFilename": "contracts\\tokens\\SafeMath.sol",
   "path": "C:\\Users\\g14m1190\\Documents\\GitHub\\UNICEF-Blockchain-Project\\contracts\\tokens\\SafeMath.sol",
   "gas": "8000000",
+  "gasPrice": "200",
   "type": "file",
   "deploy": true,
   "_gasLimit": 6000000,
   "error": false,
   "deploymentAccount": "0xae3478f55aE21B9139652467D0B73177d6bEc204",
   "realArgs": [],
-  "address": "0x2250BbAdde324CbB7cDc6d5F3957446321bB8A74",
-  "deployedAddress": "0x2250BbAdde324CbB7cDc6d5F3957446321bB8A74"
+  "deployedAddress": "0x4D7286F68a728C644D9cB600025a55D0f1134f71",
+  "transactionHash": "0x93eb96f5664d6c8eb9a409fbfcaad15de31d4c690b4ecece630a30cd62b6ce9b"
 }

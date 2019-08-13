@@ -42,7 +42,7 @@
                                                 :rules="tokenAddressRules" label="Token Address" hint="e.g. 0xa1s..."
                                                 required>
                                             </v-text-field>
-                                            <model-select :options="options" label="ISP Name" v-model="item"
+                                            <model-select :options="ISPS" label="ISP Name" v-model="ispName"
                                                 placeholder="ISP Name e.g. Cell C- South Africa">
                                             </model-select>
                                             <v-spacer></v-spacer>
@@ -51,7 +51,8 @@
                                             <v-checkbox v-model="checkbox"
                                                 :rules="[v => !!v || 'You must agree to continue!']"
                                                 label="Do you agree?" required></v-checkbox>
-                                            <v-btn :disabled="!valid" color="success" class="mr-4" @click="validate">
+                                            <v-btn :disabled="!valid" color="success" class="mr-4"
+                                                @click="validate; donateToISP()">
                                                 Donate
                                             </v-btn>
                                             <v-btn color="#7EC0EE" @click="donate=false">
@@ -190,7 +191,8 @@
                                             <v-btn color="#7EC0EE" @click="ispTCS=true;">
                                                 Terms and Conditions
                                             </v-btn>
-                                            <v-btn :disabled="!valid" color="success" class="mr-4" @click="validate">
+                                            <v-btn :disabled="!valid" color="success" class="mr-4"
+                                                @click="validate;registerISP()">
                                                 Register
                                             </v-btn>
                                             <v-btn color="#7EC0EE" @click="ispRegistration=false;valid=true">
@@ -264,14 +266,10 @@
                                         <v-layout wrap>
                                             <v-form ref="form" v-model="valid" lazy-validation style="width:100%;">
                                                 <v-text-field v-model="newSpeed" :rules="newSpeedRules"
-                                                    label="New Speed"
-                                                    hint="e.g. 10 N.B. The value is converted to <b>(Mbps)</b> "
-                                                    required>
+                                                    label="New Speed (Mbps)" hint="e.g. 10  " required>
                                                 </v-text-field>
                                                 <v-text-field v-model="dataBundles" :rules="dataBundlesRules"
-                                                    label="Data Bundles"
-                                                    hint="e.g. 100  N.B. The value is converted to <b>(MB)<b> "
-                                                    required>
+                                                    label="Data Bundles (MB)" hint="e.g. 100" required>
                                                 </v-text-field>
                                                 <v-btn :disabled="!valid" color="success" class="mr-4"
                                                     @click="validate; updateConnectionSpeed()">
@@ -479,10 +477,13 @@
     </v-app>
 </template>
 <script>
+    import Portis from "@portis/web3";
+    import Web3 from 'web3';
     import Loading from 'vue-loading-overlay';
     import {
         ModelSelect
     } from 'vue-search-select'
+    import EmbarkJS from '../../embarkArtifacts/embarkjs';
 
     export default {
         components: {
@@ -550,8 +551,8 @@
                     v => !!v || "Token Address is required",
                     v => (v && v.length === 42) || 'Token address must have 42 characters'
                 ],
-                selectedCountry:'',
-                countries:[],
+                selectedCountry: '',
+                countries: [],
                 select: null,
                 options: [{
                         value: '1',
@@ -596,12 +597,58 @@
                 ispUpdate: false,
                 isISP: true,
                 isSchoolRegistration: false,
-                newSchoolTCS: false
+                newSchoolTCS: false,
+                UNICEFContract: null,
+                ISPS: [],
+                Portis: null,
+                localNode: {
+                    nodeUrl: 'http://localhost:11000',
+                    chainId: 1234,
+                }
 
 
             }
         },
+        mounted() {
+            this.init()
+        },
         methods: {
+            init() {
+                this.UNICEFContract = require('../../embarkArtifacts/contracts/UNICEF')
+                this.Portis = new Portis('0705023c-3e90-405e-a0c3-6ab9ad4be7ed', this.localNode, {
+                    scope: ["email"]
+                });
+                this.Portis.config.registerPageByDefault = false
+                console.log(this.Portis.config.registerPageByDefault)
+                var web3 = new Web3(this.Portis.provider);
+                this.UNICEFContract.Providers = web3
+                console.log(this.UNICEFContract)
+                this.UNICEFContract.methods.getISPKeys().call({
+                    gas: 8000000
+                }).then((keys, err) => {
+                    keys.forEach(key => {
+                        this.UNICEFContract.methods.getISPDetails(key).call({
+                            gas: 8000000
+                        }).then((details, err) => {
+                            var address;
+                            var name;
+                            var country;
+                            address, name, country = details
+                            name = EmbarkJS.Utils.fromAscii(name);
+                            country = EmbarkJS.Utils.fromAscii(country);
+                            this.ISPS.push({
+                                value: key,
+                                text: `${name} - ${country}`,
+                                address: address
+                            })
+                        }).catch((err) => {
+                            console.log("Something went wrong!!! ", err)
+                        })
+                    });
+                }).catch((err) => {
+                    console.log("Something went wrong!!! ", err)
+                })
+            },
             showMenu(whichMenu) {
                 console.log(this.dataBundles)
                 switch (whichMenu) {
@@ -654,8 +701,86 @@
             },
             registerasSchool() {
                 this.isLoading = true
-            }
+            },
+            donateToISP() {
+                console.log(this.ispName)
+                let This = this
+                this.isLoading = true
+                if (valid) {
+                    if (customToken) {
+                        this.UNICEFContract.methods.donateERC20(EmbarkJS.Utils.toAscii(this.amount), EmbarkJS.Utils
+                            .toAscii(this.ispName.address), EmbarkJS.Utils.toAscii(this.ispName.value), this
+                            .tokenAddress).send({
+                            gas: 8000000
+                        }).then((receipt, err) => {
+                            if (err) {
+                                console.log(err)
+                            } else {
+                                console.log(receipt)
+                                This.success('Successfully donated ', This.amount, 'to ', this.ispName)
+                            }
+                            this.isLoading = false
+                        }).catch((err) => {
+                            This.error('Something went wrong whilst trying to donate please try again')
+                            This.isLoading = false
+                        })
+                    } else {
+                        this.UNICEFContract.methods.donate(EmbarkJS.Utils.toAscii(this.amount), EmbarkJS.Utils.toAscii(
+                            this.ispName.address), EmbarkJS.Utils.toAscii(this.ispName.value)).send({
+                            gas: 8000000
+                        }).then((receipt, err) => {
+                            if (err) {
+                                console.log(err)
+                            } else {
+                                console.log(receipt)
+                                This.success('Successfully donated ', This.amount, 'to ', this.ispName)
+                            }
+                            this.isLoading = false
+                        }).catch((err) => {
+                            This.error('Something went wrong whilst trying to donate please try again')
+                            This.isLoading = false
+                        })
+                    }
+                }
+            },
+            registerISP() {
+                let This = this
+                this.isLoading = true
+                if (valid) {
+                    this.UNICEFContract.methods.registerISP(EmbarkJS.Utils.toAscii(this.ispName), EmbarkJS.Utils
+                        .toAscii(this.ispEmail), EmbarkJS.Utils.toAscii(this.selectedCountry)).send({
+                        gas: 8000000
+                    }).then((receipt, err) => {
+                        if (err) {
+                            console.log(err)
+                        } else {
+                            This.success('Succesfully registered as an ISP')
+                        }
+                        This.isLoading = false
 
+                    }).catch((err) => {
+                        This.error(
+                            'Something went wrong whilst trying to register you as an ISP wont you try again'
+                        )
+                        This.isLoading = false
+                    })
+                }
+            },
+            success(message) {
+                Swal.fire(
+                    'Success',
+                    message,
+                    'success'
+                )
+            },
+            error(message) {
+                Swal.fire({
+                    type: 'error',
+                    title: 'Oops...',
+                    text: message,
+                    allowOutsideClick: true
+                })
+            }
         }
 
     }

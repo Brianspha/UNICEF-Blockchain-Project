@@ -23,10 +23,24 @@
                             <v-toolbar-title>Schools Database</v-toolbar-title>
                             <v-spacer></v-spacer>
                         </v-toolbar>
+
                         <v-flex class="containerflex" style="height:900px;">
-                            <virtual-list class="list" :size="size" :remain="remain" :start="start" :item="item"
-                                :itemcount="itemCount" :itemprops="getItemprops">
-                            </virtual-list>
+                            <v-card>
+                                <MultiSelect :selected-options="selectedSchools" :options="schoolsOptions"
+                                    label="School" @select="onSelect"
+                                    placeholder="Search School: e.g. AJ Mwelase Primary School">
+                                </MultiSelect>
+                                <v-card-actions>
+                                    <v-btn color="#7EC0EE" @click="registerschool()">
+                                        Register
+                                    </v-btn>
+                                </v-card-actions>
+                            </v-card>
+                            <v-card>
+                                <virtual-list class="list" :size="size" :remain="remain" :start="start" :item="item"
+                                    :itemcount="itemCount" :itemprops="getItemprops">
+                                </virtual-list>
+                            </v-card>
                         </v-flex>
                         <loading :active.sync="isLoading" :can-cancel="false" :is-full-page="fullPage">
                         </loading>
@@ -37,6 +51,12 @@
     </v-app>
 </template>
 <script>
+    import {
+        MultiSelect
+    } from 'vue-search-select'
+    import {
+        ModelSelect
+    } from 'vue-search-select'
     import virtualList from 'vue-virtual-scroll-list'
     import Loading from 'vue-loading-overlay';
     import Swal from 'sweetalert2'
@@ -57,23 +77,28 @@
             InfiniteLoading,
             Loading,
             'virtual-list': virtualList,
-            item
+            item,
+            ModelSelect,
+            MultiSelect
+
         },
         data() {
             return {
                 selectedSchool: null,
                 Schools: [],
+                schoolsOptions: [],
                 dialog: false,
                 isLoading: false,
                 fullPage: true,
                 itemComponent: item,
-                remain:20,
+                remain: 20,
                 size: 80,
                 itemCount: 0,
                 start: 0,
                 item: item,
                 scrollelement: null,
-                bench: 100
+                bench: 100,
+                selectedSchools: []
             }
         },
         beforeMount() {
@@ -89,6 +114,10 @@
             }
         },
         methods: {
+            onSelect(items, lastSelectItem) {
+                this.selectedSchools = items
+                this.selectedSchool = lastSelectItem
+            },
             getItemprops(itemIndex) {
                 // <item/> will render with following data object:
                 // https://vuejs.org/v2/guide/render-function.html#The-Data-Object-In-Depth
@@ -130,6 +159,12 @@
                         isp: "Querying Contract",
                         registered: false
                     }
+                    this.schoolsOptions.push({
+                        value: school.Official_Institution_Name,
+                        latitude: school.latitude,
+                        longitude: school.longitude,
+                        text: `${school.Official_Institution_Name} - ${country.name}`
+                    })
                     this.itemCount++
                     //console.log(newSchool)
                     newSchoolData.push(newSchool)
