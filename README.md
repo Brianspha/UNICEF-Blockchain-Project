@@ -13,7 +13,7 @@
 
 **Scope**
 
-***This dApp focuses on these two areas***
+*This dApp focuses on these two areas*
 
 - Application to enable governments, the public, and connectivity/network providers to view connectivity for a specific country. ISP, donors and the general public can leverage data from this dashboard to view the connectivity for each country.
 
@@ -26,7 +26,7 @@ ISP will be required to update donors and the general public about the connectiv
 
 **NB:** To use this dApp you will need the following dependencies installed
 
-***Front End***
+**Front End**
 - VueJS
 - Embark
 - Portis
@@ -46,4 +46,4 @@ ISP will be required to update donors and the general public about the connectiv
 
 
 **Link to working dApp**
-- 
+- https:
