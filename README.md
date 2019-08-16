@@ -36,3 +36,52 @@ ISPs are responsible for updating users on an ongoing (can be daily, weekly, etc
 If the ISP fails to grant a minimum download and upload speed for more than n (can be days, weeks, etc.) duration of time, the ISP will not receive funding from donors
 If the ISP fails to grant a minimum download and upload speed for more than n (can be days, weeks, etc.) duration of time, the solution will change to a new ISP, which is than responsible for providing internet to the country
 Reports should be generated at an ongoing basis re. the connectivity of schools for the country that the ISP is providing connectivity for and donors are providing funding for
+
+
+#To run the project 
+
+
+run  
+#npm install
+
+followed by
+
+#npm install -g @vue/cli
+
+#npm install -g embark
+
+once that is done run the following command
+
+#embark run --nodashboard
+ensure you have geth installed once you have that running start the front end server by running
+
+#npm run serve
+
+should be good to go in the instance where you dont have geth instead of running embark run --nodashboard open a new CLI and navigate to the project folder from there run 
+
+# embark simulator
+
+#or you can install ganache and change the configuration specified in the contracts file
+
+at the moment its running of my private chain if you wish to run it off this just run the following command
+
+#embark run Chain --nodashboard
+
+if you wish to spin off you own ganache instance just modify the 
+
+deployment: {
+      protocol: "http",
+      type: "rpc",
+      host: "146.231.123.137",
+      port: "11000",
+    }
+contained in the contracts file to
+
+deployment: {
+      protocol: "http",
+      type: "rpc",
+      host: "localhost/ip address",
+      port: "your ganache port number",
+    }
+
+

@@ -32,14 +32,14 @@
                                 </MultiSelect>
                                 <v-card-actions>
                                     <v-btn color="#7EC0EE" @click="registerschool()">
-                                        Register
-                                    </v-btn>
+                                                Register
+                                            </v-btn>
                                 </v-card-actions>
                             </v-card>
                             <v-card>
-                                <virtual-list class="list" :size="size" :remain="remain" :start="start" :item="item"
-                                    :itemcount="itemCount" :itemprops="getItemprops">
-                                </virtual-list>
+                            <virtual-list class="list" :size="size" :remain="remain" :start="start" :item="item"
+                                :itemcount="itemCount" :itemprops="getItemprops">
+                            </virtual-list>
                             </v-card>
                         </v-flex>
                         <loading :active.sync="isLoading" :can-cancel="false" :is-full-page="fullPage">

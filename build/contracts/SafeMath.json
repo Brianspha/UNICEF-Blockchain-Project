@@ -1,11 +1,11 @@
 {
   "className": "SafeMath",
   "args": [],
-  "code": "60556023600b82828239805160001a607314601657fe5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a72305820ae3863b97dffda99c8f7ff4d960fda3c87e205b7e70d51bbc23abf434744a54264736f6c63430005090032",
-  "runtimeBytecode": "73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a72305820ae3863b97dffda99c8f7ff4d960fda3c87e205b7e70d51bbc23abf434744a54264736f6c63430005090032",
-  "realRuntimeBytecode": "73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a72305820ae3863b97dffda99c8",
+  "code": "60556023600b82828239805160001a607314601657fe5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a723058203ca64e5d39373e717003a27d0d0f21242384ce5332f61c8df2d24da3a2b01e0764736f6c63430005090032",
+  "runtimeBytecode": "73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a723058203ca64e5d39373e717003a27d0d0f21242384ce5332f61c8df2d24da3a2b01e0764736f6c63430005090032",
+  "realRuntimeBytecode": "73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a723058203ca64e5d39373e7170",
   "linkReferences": {},
-  "swarmHash": "f7ff4d960fda3c87e205b7e70d51bbc23abf434744a54264736f6c6343000509",
+  "swarmHash": "03a27d0d0f21242384ce5332f61c8df2d24da3a2b01e0764736f6c6343000509",
   "gasEstimates": {
     "creation": {
       "codeDepositCost": "17000",
@@ -22,17 +22,16 @@
   },
   "functionHashes": {},
   "abiDefinition": [],
-  "filename": "C:/Users/g14m1190/Documents/GitHub/UNICEF-Blockchain-Project/.embark/contracts/tokens/SafeMath.sol",
-  "originalFilename": "contracts\\tokens\\SafeMath.sol",
-  "path": "C:\\Users\\g14m1190\\Documents\\GitHub\\UNICEF-Blockchain-Project\\contracts\\tokens\\SafeMath.sol",
+  "filename": "C:/Users/g14m1190/Documents/GitHub/UNICEF-Blockchain-Project/.embark/contracts/SafeMath.sol",
+  "originalFilename": "contracts\\SafeMath.sol",
+  "path": "C:\\Users\\g14m1190\\Documents\\GitHub\\UNICEF-Blockchain-Project\\contracts\\SafeMath.sol",
   "gas": "8000000",
-  "gasPrice": "200",
   "type": "file",
   "deploy": true,
   "_gasLimit": 6000000,
   "error": false,
   "deploymentAccount": "0xae3478f55aE21B9139652467D0B73177d6bEc204",
   "realArgs": [],
-  "deployedAddress": "0x4D7286F68a728C644D9cB600025a55D0f1134f71",
-  "transactionHash": "0x93eb96f5664d6c8eb9a409fbfcaad15de31d4c690b4ecece630a30cd62b6ce9b"
+  "address": "0x437c5a9ab1e1E08d7b43C369b0642907D89Fd668",
+  "deployedAddress": "0x437c5a9ab1e1E08d7b43C369b0642907D89Fd668"
 }

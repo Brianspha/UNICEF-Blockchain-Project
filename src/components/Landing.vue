@@ -28,7 +28,7 @@
                             <v-tab-item style="height:1024px">
                                 <v-map :zoom="zoom" :center="center" min-height="1024px">
                                     <v-icondefault></v-icondefault>
-                                    <v-tilelayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png">
+                                    <v-tilelayer :url="url">
                                     </v-tilelayer>
                                     <v-marker-cluster :options="clusterOptions" @clusterclick="" @click="">
                                         <v-marker v-for="school in schools" :key="school.name+school.position"
@@ -82,6 +82,7 @@
     import shadowUrl from 'leaflet/dist/images/marker-shadow.png'
     import reverseGeoCoder from 'fast-reverse-geocoder'
     import Loading from 'vue-loading-overlay';
+    import EmbarkJS from '../../embarkArtifacts/embarkjs'
     export default {
         components: {
             'v-map': Vue2Leaflet.LMap,
@@ -144,7 +145,9 @@
                 selectedCountry: '',
                 activityOptions: {},
                 ispOptions: {},
-                ispDonorOptions: {}
+                ispDonorOptions: {},
+                UNICEFContract: null,
+                ispCategories: []
             }
         },
         watch: {
@@ -155,8 +158,15 @@
         },
         beforeMount() {
             this.initData()
+            this.init()
         },
         methods: {
+            init() {
+                EmbarkJS.onReady((err) => {
+                    console.log(err)
+                    this.UNICEFContract = require('../../embarkArtifacts/contracts/UNICEF')
+                })
+            },
             initData() {
                 let This = this
                 this.mapOptions = {
@@ -267,7 +277,7 @@
                         height: '50%'
                     },
                     title: {
-                        text: 'Graph shwoing donors who provide funding to ISP to provide Internet Connection'
+                        text: 'Graph showing donors who provide funding to ISP to provide Internet Connection'
                     },
                     tooltip: {
                         useHTML: true,
@@ -346,25 +356,146 @@
                 }
             },
             getAverageISPConnectionSpeed(countryName) {
-                return [{
-                    "name": "Cell C",
-                    data: [12]
-                }]
+                let This = this
+                var speeds = []
+                this.UNICEFContract.methods.getRegisteredSchoolIDs().call({
+                    gas: 8000000
+                }).then((ids, error) => {
+                    if (ids.length > 0) {
+                        ids.forEach((id) => {
+                            var ispID, schoolName, address, country, latitude, longitude,
+                                upload, download, postalAddress;
+                            var details = web3.eth.abi.decodeParameters(["address", "bytes",
+                                "bytes",
+                                "bytes", "bytes", "bytes", "uint256", "uint256"
+                            ], id)
+                            schoolName = web3.utils.toAscii((details[1]))
+                            postalAddress = web3.utils.toAscii((details[0]))
+                            address = ((details[2]))
+                            country = web3.utils.toAscii((details[3]))
+                            latitude = web3.utils.toAscii((details[4]))
+                            longitude = web3.utils.toAscii((details[5]))
+                            upload = (details[6])
+                            download = (details[7])
+                            longitude = This.removetrailingZeros(longitude)
+                            latitude = This.removetrailingZeros(latitude)
+                            latitude = latitude.replace(/m/g, '-')
+                            longitude = longitude.replace(/m/g, '-')
+                            if (countryName === country) {
+                                This.UNICEFContract.methods.getISPDetails(address).call({
+                                    gas: 8000000
+                                }).then((dets, err) => {
+                                    if (dets) {
+                                        var address = details[0];
+                                        var name = Web3.utils.hexToAscii(details[1]);
+                                        if (!speeds((school) => school.name ===
+                                                name)) {
+                                            speeds.push({
+                                                name: name,
+                                                speed: upload,
+                                                data: [1],
+                                                schools: [schoolName]
+                                            })
+                                            This.ispCategories.push(name)
+                                        } else {
+                                            speeds = speeds.map((
+                                                school) => {
+                                                if (school.name === name) {
+                                                    school.data[0] += 1
+                                                    school.schools.push(schoolName)
+                                                }
+                                                return school
+                                            })
+                                        }
+                                    } else {
+                                        console.log('Something went wrong: ', error)
+                                    }
+                                }).catch((err) => {
+                                    console.log(err)
+                                })
+
+                            }
+                        })
+                    }
+                })
+                if (speeds.length === 0) {
+                    speeds.push({
+                        name: "No ISP",
+                        data: [This.findCountrySchools(countryName).length]
+                    })
+                } else if (speeds.length !== This.findCountrySchools(countryName).length) {
+                    speeds.push({
+                        name: "No ISP",
+                        speed: 0,
+                        data: [This.findCountrySchools(countryName).length - registeredSchools.length],
+                        schools: []
+                    })
+                }
+                return speeds
             },
             getISPForCountry(countryName) {
-                return ['Cell C']
+                return this.ispCategories
             },
             getISPDonorsForCountry(countryName) {
                 //@dev query smart contract
-                var data = [{
-                    name: 'No Donors',
-                    data: [{
-                        name: 'No ISP',
-                        value: 0,
-                        speed: 0
-                    }]
-                }]
-                return data
+                var donations = []
+                let This = this.UNICEFContract.methods.getallDonationKeys().call({
+                    gas: 8000000
+                }).then((keys, error) => {
+                    if (keys.length > 0) {
+                        keys.forEach((key) => {
+                            This.UNICEFContract.methods.getDonation(key).call({
+                                gas: 8000000
+                            }).then((details, err) => {
+                                if (!err) {
+                                    var name, country, amount, funder;
+                                    name = web3.utils.toAscii(details[0])
+                                    country = web3.utils.toAscii(details[1])
+                                    amount = web3.utils.toAscii(details[2])
+                                    funder = details[3]
+                                    if (!donations.some((donor) => donor.name === funder)) {
+                                        donations.push({
+                                            name: funder,
+                                            data: [{
+                                                name: name,
+                                                value: amount,
+                                                country: country
+                                            }]
+                                        })
+                                    } else {
+                                        donations = donations.map((donor) => {
+                                            if (donor.name === funder) {
+                                                donor.data.push({
+                                                    name: name,
+                                                    value: amount,
+                                                    country: country
+                                                })
+                                            }
+                                        })
+                                    }
+                                }
+                            }).catch((err) => {
+                                console.log(err)
+                            })
+                        })
+                    }
+                }).catch((err) => {
+                    console.log(err)
+                }).finally(() => {
+                    if (donations.length === 0) {
+                        donations = [{
+                            name: 'No Donors',
+                            data: [{
+                                name: 'No ISP',
+                                value: 0,
+                                speed: 0
+                            }]
+                        }]
+                    }
+                    return donations
+                })
+
+
             },
             findCountrySchools(countryName) {
                 var schools = require('../json/schools.json')
@@ -449,60 +580,115 @@
                     series: This.getISPForSchools(country)
                 }
             },
-            getISPForSchools(countryName) {
+            getISPForSchools: async function (countryName) {
                 this.isLoading = true
-                var schools = require('../json/schools.json')
                 var schoolsFormated = []
                 var count = 0
-                schools.forEach(school => {
-                    if (!school.GIS_Latitude || !school.GIS_Longitude) {
-                        return
-                    }
-                    school.GIS_Latitude = school.GIS_Latitude.toString().replace(/,/g, '.')
-                        .toString()
-                        .replace(/ /g, '')
-                    school.GIS_Longitude = school.GIS_Longitude.toString().replace(/,/g, '.')
-                        .toString()
-                        .replace(/ /g, '')
-                    if (school.GIS_Latitude === school.GIS_Longitude) {
-                        ////console.log("equal")
-                        return
-                    }
-                    // ////console.log(school)
-                    var country = reverseGeoCoder.search(school.GIS_Longitude, school.GIS_Latitude)
-                    //console.log(country)
-                    if (!country) {
-                        return
-                    }
-                    if (country.name === countryName && !school.name && count <= this.limit) {
-                        if (!schoolsFormated.some((skwl) => skwl.name === "Not Connected")) {
-                            schoolsFormated.push({
-                                name: "Not Connected",
-                                speed: 0,
-                                data: [1]
-                            })
-                        } else {
-                            schoolsFormated = schoolsFormated.map((skwl) => {
-                                if (skwl.name === "Not Connected") {
-                                    skwl.data[0] += 1
-                                }
-                                return skwl
-                            })
-                        }
-
-                    } else {
-                        schoolsFormated = schoolsFormated.map((skwl) => {
-                            if (skwl.name === school.name) {
-                                skwl.data[0] += 1
+                let This = this
+                let registeredSchools = []
+                this.UNICEFContract.methods.getRegisteredSchoolIDs().call({
+                    gas: 8000000
+                }).then((ids, error) => {
+                    console.log("ids: ", ids)
+                    if (ids.length > 0) {
+                        ids.forEach((id) => {
+                            var ispID, schoolName, address, country, latitude, longitude,
+                                upload, download, postalAddress;
+                            var details = web3.eth.abi.decodeParameters(["address", "bytes",
+                                "bytes",
+                                "bytes", "bytes", "bytes", "uint256", "uint256"
+                            ], id)
+                            schoolName = web3.utils.toAscii((details[1]))
+                            postalAddress = web3.utils.toAscii((details[2]))
+                            address = ((details[0]))
+                            country = web3.utils.toAscii((details[3]))
+                            latitude = web3.utils.toAscii((details[4]))
+                            longitude = web3.utils.toAscii((details[5]))
+                            upload = (details[6])
+                            download = (details[7])
+                            longitude = This.removetrailingZeros(longitude)
+                            latitude = This.removetrailingZeros(latitude)
+                            latitude = latitude.replace(/m/g, '-')
+                            longitude = longitude.replace(/m/g, '-')
+                            if (countryName === country) {
+                                //var trail = This.removetrailingZeros(latitude)
+                                console.log("address: ", address)
+                                console.log("postalAddress: ", postalAddress)
+                                This.UNICEFContract.methods.getISPDetails(address).call({
+                                    gas: 8000000
+                                }).then((dets, err) => {
+                                    if (err) {
+                                        console.log("error: ", err)
+                                    }
+                                    if (dets) {
+                                        var address = details[0];
+                                        var name = Web3.utils.hexToAscii(details[1]);
+                                        console.log("dets: ", details)
+                                        if (!registeredSchools.some((school) => school
+                                                .name ===
+                                                name)) {
+                                            registeredSchools.push({
+                                                name: name,
+                                                speed: upload,
+                                                data: [1],
+                                                schools: [schoolName]
+                                            })
+                                            console.log("adding: ", name)
+                                        } else {
+                                            registeredSchools = registeredSchools.map((
+                                                school) => {
+                                                if (school.name === name) {
+                                                    console.log("updating: ",
+                                                        school)
+                                                    school.data[0] += 1
+                                                    school.schools.push(schoolName)
+                                                }
+                                                return school
+                                            })
+                                        }
+                                    } else {
+                                        console.log('Something went wrong: ', error)
+                                    }
+                                }).catch((err) => {
+                                    console.log(err)
+                                })
                             }
-                            return skwl
+                        })
+                        //console.log(schoolsFormated.length)
+                        //this.isLoading = false
+                        console.log(registeredSchools)
+
+                    }
+                }).catch((err) => {
+                    console.log(err)
+                }).finally(() => {
+                    if (registeredSchools.length === 0) {
+                        registeredSchools.push({
+                            name: "Not Connected",
+                            data: [This.findCountrySchools(
+                                countryName).length]
+                        })
+                    } else if (registeredSchools.length !== This
+                        .findCountrySchools(countryName).length) {
+                        registeredSchools.push({
+                            name: "Not Connected",
+                            speed: 0,
+                            data: [This.findCountrySchools(
+                                    countryName).length -
+                                registeredSchools
+                                .length
+                            ],
+                            schools: []
                         })
                     }
-                });
-                //console.log(schoolsFormated.length)
-                this.isLoading = false
-                //console.log(ispFormated)
-                return schoolsFormated
+                    return registeredSchools
+                })
+
+
+            },
+            removetrailingZeros(string) {
+                console.log(string.split('').filter((c) => c.match(/^[0-9a-zA-Z-.]+$/)))
+                return string.split('').filter((c) => c.match(/^[0-9a-zA-Z-.]+$/)).join("")
             },
             getCountriesSchools() {
                 var schools = require('../json/schools.json')
@@ -529,13 +715,13 @@
                         }
                         if (!countries.some((county => county[0] === country.name))) {
                             countries.push([country.name, 1])
-                           // console.log("created entry: ", country.name)
-                           // console.log(countries)
+                            // console.log("created entry: ", country.name)
+                            // console.log(countries)
                         } else {
                             countries = countries.map((countryData) => {
                                 //console.log("searching: ",country.name,countryData[0])
                                 if (countryData[0] === country.name) {
-                                  //  console.log("updated entry: ", country.name)
+                                    //  console.log("updated entry: ", country.name)
                                     countryData[1] += 1
                                     return countryData
                                 } else {

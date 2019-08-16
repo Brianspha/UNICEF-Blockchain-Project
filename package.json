@@ -9,8 +9,10 @@
   },
   "dependencies": {
     "@portis/web3": "^2.0.0-beta.36",
+    "@quantfive/network-speed": "^2.0.1",
     "apexcharts": "^3.8.4",
     "core-js": "^2.6.5",
+    "country-list": "^2.1.1",
     "d3": "^5.9.7",
     "embarkjs-connector-web3": "4.0.0",
     "fast-reverse-geocoder": "^1.0.0",
