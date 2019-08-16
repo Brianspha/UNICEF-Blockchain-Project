@@ -562,5 +562,17 @@
         "address": "0x8cBfa4400b5C654f2e9EbEb018BF6B0F0eaD355E"
       }
     }
+  },
+  "0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d": {
+    "contracts": {
+      "0x9006c82c31d5287a2ece9760385eed56a9d43537db3e3a5f8c7f832d93c535e1": {
+        "name": "SafeMath",
+        "address": "0x373ccCda5AA6a393ACC23226f1Cbbfd8BAF8160d"
+      },
+      "0x59342fabd080bb22d1b24a96188499ffee244817bcdad5d531cc52ef8898f8dc": {
+        "name": "UNICEF",
+        "address": "0x034a1CEBc3C9A0d2Ce1941e2009aA6c531b02e28"
+      }
+    }
   }
 }

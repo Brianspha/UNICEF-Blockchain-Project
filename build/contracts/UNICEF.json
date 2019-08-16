@@ -517,14 +517,14 @@
   "filename": "C:/Users/g14m1190/Documents/GitHub/UNICEF-Blockchain-Project/.embark/contracts/UNICEF.sol",
   "originalFilename": "contracts\\UNICEF.sol",
   "path": "C:\\Users\\g14m1190\\Documents\\GitHub\\UNICEF-Blockchain-Project\\contracts\\UNICEF.sol",
-  "gas": "8000000",
-  "gasPrice": "200",
+  "gas": 3198695,
+  "gasPrice": "1000000000",
   "type": "file",
   "deploy": true,
   "_gasLimit": 6000000,
   "error": false,
-  "deploymentAccount": "0xae3478f55aE21B9139652467D0B73177d6bEc204",
+  "deploymentAccount": "0xA9539f2E5C3DD5f2a5Ecd8eCE5ff9b3AB5d1cA28",
   "realArgs": [],
-  "deployedAddress": "0x8cBfa4400b5C654f2e9EbEb018BF6B0F0eaD355E",
-  "transactionHash": "0x67a9acf1dfa799db459342abe9e6b4b7b15faee1ee874697063073fc1ac1372c"
+  "deployedAddress": "0x034a1CEBc3C9A0d2Ce1941e2009aA6c531b02e28",
+  "transactionHash": "0x3856f84a04b9e51a1956731eed96a0bf2320a4c3b9bcf272167eadd3a7d46d82"
 }

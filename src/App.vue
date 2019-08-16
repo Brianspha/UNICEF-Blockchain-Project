@@ -205,18 +205,11 @@
         fullPage: true,
         isLoading: false,
         items: [{
-            icon: 'find_in_page',
-            text: 'View Connected Schools',
-            to: "/Landing",
-            render: true
-          },
-          {
-            icon: 'compare_arrows',
-            text: 'View Updates',
-            to: "/ActivityView",
-            render: true
-          }
-        ],
+          icon: 'find_in_page',
+          text: 'View Connected Schools',
+          to: "/Landing",
+          render: true
+        }],
         Portis: null,
         web3: null,
         localNode: {
@@ -258,9 +251,18 @@
       init() {
         console.log(EmbarkJS.Providers)
         EmbarkJS.onReady((err) => {
-          console.log(EmbarkJS)
-          this.UNICEFContract = require('../embarkArtifacts/contracts/UNICEF')
-          this.about = true
+          if (err) {
+            this.errorWithFooter(
+              "<a href='https://metamask.io/;';>Please visit their website for instructions of how to download it</a>",
+              'MetaMask is not installed!'
+            )
+          } else {
+
+
+            console.log(EmbarkJS)
+            this.UNICEFContract = require('../embarkArtifacts/contracts/UNICEF')
+            this.about = true
+          }
         })
       },
       checkUserType() {
@@ -269,13 +271,13 @@
       watchForAccountChanges() {
         let tempThis = this
         window.ethereum.on('accountsChanged', function (accounts) {
-          location.reload()
+          This.resetMenu()
         })
         window.ethereum.on('networkChanged', function (netId) {
-          location.reload()
+          This.resetMenu()
         })
         window.ethereum.on('networkChanged', function (netId) {
-          location.reload()
+          This.resetMenu()
         })
       },
       errorWithFooter(footerMessage, text) {
@@ -366,7 +368,7 @@
             }
           }).catch((err) => {})
         } else {
-          location.replace("/")
+          this.resetMenu()
         }
       },
       validate() {
@@ -386,6 +388,15 @@
           message,
           'success'
         )
+      },
+      resetMenu() {
+        this.items = [{
+          icon: 'find_in_page',
+          text: 'View Connected Schools',
+          to: "/Landing",
+          render: true
+        }]
+        location.replace("/")
       },
       error(message) {
         Swal.fire({
