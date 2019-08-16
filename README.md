@@ -38,34 +38,25 @@ If the ISP fails to grant a minimum download and upload speed for more than n (c
 Reports should be generated at an ongoing basis re. the connectivity of schools for the country that the ISP is providing connectivity for and donors are providing funding for
 
 
-#To run the project 
+# To run the project 
+1. install metamask https://metamask.io/?gclid=EAIaIQobChMIlbj24oOI5AIVQ_hRCh31MgdeEAAYASAAEgLvu_D_BwE and setup an account
+2. install Geth https://github.com/ethereum/go-ethereum/wiki/Installing-Geth
+2. npm install 
+3. npm install -g @vue/cli
+4. npm install -g embark (in the instance where this fails please ensure you have git installed see: https://git-scm.com/downloads also ensure you have the windows build tools if you using a windows machine just run the following command in admin mode: npm install --global windows-build-tools
+ see: https://www.npmjs.com/package/windows-build-tools for more instructions)
+5. embark run --nodashboard
+6. npm run serve
 
-
-run  
-#npm install
-
-followed by
-
-#npm install -g @vue/cli
-
-#npm install -g embark
-
-once that is done run the following command
-
-#embark run --nodashboard
-ensure you have geth installed once you have that running start the front end server by running
-
-#npm run serve
-
-should be good to go in the instance where you dont have geth instead of running embark run --nodashboard open a new CLI and navigate to the project folder from there run 
+should be good to go in the instance where you dont have geth instead of running  embark run --nodashboard open a new CLI and navigate to the project folder from there run 
 
 # embark simulator
 
-#or you can install ganache and change the configuration specified in the contracts file
+# or you can install ganache and change the configuration specified in the contracts file
 
 at the moment its running of my private chain if you wish to run it off this just run the following command
 
-#embark run Chain --nodashboard
+# embark run Chain --nodashboard
 
 if you wish to spin off you own ganache instance just modify the 
 
