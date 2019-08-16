@@ -208,7 +208,7 @@
   "filename": "C:/Users/g14m1190/Documents/GitHub/UNICEF-Blockchain-Project/.embark/contracts/tokens/IERC20.sol",
   "originalFilename": "contracts\\tokens\\IERC20.sol",
   "path": "C:\\Users\\g14m1190\\Documents\\GitHub\\UNICEF-Blockchain-Project\\contracts\\tokens\\IERC20.sol",
-  "gas": "auto",
+  "gas": "8000000",
   "type": "file",
   "deploy": false,
   "_gasLimit": 6000000,

@@ -84,4 +84,5 @@ deployment: {
       port: "your ganache port number",
     }
 
+# NB ensure you have ganache install if you want to run your instance https://www.trufflesuite.com/ganache
 
