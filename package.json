@@ -1,0 +1,82 @@
+{
+  "name": "unicef",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "@portis/web3": "^2.0.0-beta.36",
+    "@quantfive/network-speed": "^2.0.1",
+    "apexcharts": "^3.8.4",
+    "core-js": "^2.6.5",
+    "country-list": "^2.1.1",
+    "d3": "^5.9.7",
+    "embarkjs-connector-web3": "4.0.0",
+    "fast-reverse-geocoder": "^1.0.0",
+    "fast-sort": "^1.5.6",
+    "highcharts": "^7.1.2",
+    "highcharts-vue": "^1.3.5",
+    "install": "^0.13.0",
+    "json5": "^2.1.0",
+    "leaflet": "^1.5.1",
+    "portis": "^1.3.5",
+    "reverse-geocoding": "^3.0.1",
+    "secure-ls": "^1.2.5",
+    "sweetalert": "^2.1.2",
+    "sweetalert2": "^8.15.0",
+    "sync": "^0.2.5",
+    "vue": "^2.6.10",
+    "vue-async-data": "^1.0.2",
+    "vue-choropleth": "^0.3.1",
+    "vue-fab": "^2.3.1",
+    "vue-infinite-loading": "^2.4.4",
+    "vue-infinite-scroll": "^2.0.2",
+    "vue-loading-overlay": "^3.2.0",
+    "vue-router": "^3.0.7",
+    "vue-search-select": "^2.8.3",
+    "vue-snotify": "^3.2.1",
+    "vue-virtual-scroll-list": "^1.4.1",
+    "vue2-leaflet-markercluster": "^3.0.0",
+    "vuetify": "^1.5.16",
+    "web3": "^1.2.1"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^3.9.0",
+    "@vue/cli-plugin-eslint": "^3.9.0",
+    "@vue/cli-service": "^3.9.0",
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.16.0",
+    "eslint-plugin-vue": "^5.0.0",
+    "postcss-loader": "^3.0.0",
+    "vue-clusterize": "^0.5.1",
+    "vue-template-compiler": "^2.6.10",
+    "vue-virtual-infinite-scroll": "^0.2.5",
+    "vue2-leaflet": "^2.2.1"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "rules": {},
+    "parserOptions": {
+      "parser": "babel-eslint"
+    }
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions"
+  ]
+}
