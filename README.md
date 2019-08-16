@@ -38,34 +38,34 @@ If the ISP fails to grant a minimum download and upload speed for more than n (c
 Reports should be generated at an ongoing basis re. the connectivity of schools for the country that the ISP is providing connectivity for and donors are providing funding for
 
 
-#To run the project 
+# To run the project 
 
 
 run  
-#npm install
+# npm install
 
 followed by
 
-#npm install -g @vue/cli
+# npm install -g @vue/cli
 
-#npm install -g embark
+# npm install -g embark
 
 once that is done run the following command
 
-#embark run --nodashboard
+# embark run --nodashboard
 ensure you have geth installed once you have that running start the front end server by running
 
-#npm run serve
+# npm run serve
 
 should be good to go in the instance where you dont have geth instead of running embark run --nodashboard open a new CLI and navigate to the project folder from there run 
 
 # embark simulator
 
-#or you can install ganache and change the configuration specified in the contracts file
+# or you can install ganache and change the configuration specified in the contracts file
 
 at the moment its running of my private chain if you wish to run it off this just run the following command
 
-#embark run Chain --nodashboard
+# embark run Chain --nodashboard
 
 if you wish to spin off you own ganache instance just modify the 
 
