@@ -45,7 +45,7 @@ Reports should be generated at an ongoing basis re. the connectivity of schools 
 3. npm install -g @vue/cli
 4. npm install -g embark (in the instance where this fails please ensure you have git installed see: https://git-scm.com/downloads also ensure you have the windows build tools if you using a windows machine just run the following command in admin mode: npm install --global windows-build-tools
  see: https://www.npmjs.com/package/windows-build-tools for more instructions)
-5. ```embark run --nodashboard``
+5. ```embark run --nodashboard```
 6. ```npm run serve```
 
 should be good to go in the instance where you dont have geth instead of running  embark run --nodashboard open a new CLI and navigate to the project folder from there run 
