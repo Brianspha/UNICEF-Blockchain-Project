@@ -26,12 +26,13 @@
   "originalFilename": "contracts\\SafeMath.sol",
   "path": "C:\\Users\\g14m1190\\Documents\\GitHub\\UNICEF-Blockchain-Project\\contracts\\SafeMath.sol",
   "gas": "8000000",
+  "gasPrice": "200",
   "type": "file",
   "deploy": true,
   "_gasLimit": 6000000,
   "error": false,
-  "deploymentAccount": "0xA9539f2E5C3DD5f2a5Ecd8eCE5ff9b3AB5d1cA28",
+  "deploymentAccount": "0xae3478f55aE21B9139652467D0B73177d6bEc204",
   "realArgs": [],
-  "address": "0x0790BeCe2463ef887d165C23A699f4eC38E6dB65",
-  "deployedAddress": "0x0790BeCe2463ef887d165C23A699f4eC38E6dB65"
+  "deployedAddress": "0x85b507354814bfB7c899DD4B45313aE2CAc7966E",
+  "transactionHash": "0xfdce90a811be1d537023a8c8ad09f9d377298b34ea25ecb4d9ab935e1d25a67b"
 }

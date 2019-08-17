@@ -261,6 +261,7 @@
 
             console.log(EmbarkJS)
             this.UNICEFContract = require('../embarkArtifacts/contracts/UNICEF')
+            console.log(this.UNICEFContract)
             this.about = true
           }
         })
