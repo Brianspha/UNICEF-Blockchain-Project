@@ -40,15 +40,15 @@
                                 </v-map>
                             </v-tab-item>
                             <v-tab-item style="height:1024px">
-                                <highcharts :options="DetailsOptions">
+                                <highcharts :options="DetailsOptions" :updateArgs="updateArgs">
                                 </highcharts>
-                                <highcharts :options="ispOptions">
+                                <highcharts :options="ispOptions" :updateArgs="updateArgs">
                                 </highcharts>
                             </v-tab-item>
                             <v-tab-item style="height:1024px">
-                                <highcharts :options="activityOptions">
+                                <highcharts :options="activityOptions" :updateArgs="updateArgs">
                                 </highcharts>
-                                <highcharts :options="ispDonorOptions">
+                                <highcharts :options="ispDonorOptions" :updateArgs="updateArgs">
                                 </highcharts>
                             </v-tab-item>
                         </v-tabs-items>
@@ -83,6 +83,9 @@
     import reverseGeoCoder from 'fast-reverse-geocoder'
     import Loading from 'vue-loading-overlay';
     import EmbarkJS from '../../embarkArtifacts/embarkjs'
+    import {
+        rejects
+    } from 'assert';
     export default {
         components: {
             'v-map': Vue2Leaflet.LMap,
@@ -98,6 +101,7 @@
         },
         data() {
             return {
+                updateArgs: [true, true, true],
                 country: '',
                 sheet: false,
                 mapOptions: {},
@@ -147,7 +151,8 @@
                 ispOptions: {},
                 ispDonorOptions: {},
                 UNICEFContract: null,
-                ispCategories: []
+                ispCategories: [],
+                speeds: []
             }
         },
         watch: {
@@ -207,8 +212,12 @@
                                         This.dialog = true
                                         This.country = this.name
                                         This.getISPDetails(this.name)
+                                        This.getISPForSchools(this.name)
                                         This.getISPActivity(this.name)
+                                        This.getISPDonorsForCountry(This.name)
                                         This.getISPConnectionSpeeds(this.name)
+                                        This.getISPForCountry(this.name)
+                                        This.getAverageISPConnectionSpeed(this.name)
                                         This.findCountrySchools(this.name)
                                         This.isLoading = false
                                     }
@@ -269,7 +278,7 @@
                             borderWidth: 0
                         }
                     },
-                    series: This.getISPForSchools(country)
+                    series: []
                 }
                 this.ispDonorOptions = {
                     chart: {
@@ -312,7 +321,7 @@
                             }
                         }
                     },
-                    series: This.getISPDonorsForCountry()
+                    series: []
                 }
 
             },
@@ -323,9 +332,8 @@
                         type: 'bar',
                         marginLeft: 100
                     },
-
                     title: {
-                        text: 'Average Speed by Internet Service Provider (ISP)',
+                        text: 'Average Speed by Internet Service Provider (ISP) in Mbps',
                         align: 'left',
                         x: 90
                     },
@@ -335,7 +343,7 @@
                     },
 
                     xAxis: {
-                        categories: This.getISPForCountry(country),
+                        categories: [],
                         labels: {
                             enabled: true
                         }
@@ -352,150 +360,136 @@
                     legend: {
                         enabled: false
                     },
-                    series: This.getAverageISPConnectionSpeed(country)
+                    series: []
                 }
             },
-            getAverageISPConnectionSpeed(countryName) {
+            getAverageISPConnectionSpeed: async function (countryName) {
                 let This = this
                 var speeds = []
-                this.UNICEFContract.methods.getRegisteredSchoolIDs().call({
+                var results = await this.UNICEFContract.methods.getRegisteredSchoolIDs().call({
                     gas: 8000000
-                }).then((ids, error) => {
-                    if (ids.length > 0) {
-                        ids.forEach((id) => {
-                            var ispID, schoolName, address, country, latitude, longitude,
-                                upload, download, postalAddress;
-                            var details = web3.eth.abi.decodeParameters(["address", "bytes",
-                                "bytes",
-                                "bytes", "bytes", "bytes", "uint256", "uint256"
-                            ], id)
-                            schoolName = web3.utils.toAscii((details[1]))
-                            postalAddress = web3.utils.toAscii((details[0]))
-                            address = ((details[2]))
-                            country = web3.utils.toAscii((details[3]))
-                            latitude = web3.utils.toAscii((details[4]))
-                            longitude = web3.utils.toAscii((details[5]))
-                            upload = (details[6])
-                            download = (details[7])
-                            longitude = This.removetrailingZeros(longitude)
-                            latitude = This.removetrailingZeros(latitude)
-                            latitude = latitude.replace(/m/g, '-')
-                            longitude = longitude.replace(/m/g, '-')
-                            if (countryName === country) {
-                                This.UNICEFContract.methods.getISPDetails(address).call({
-                                    gas: 8000000
-                                }).then((dets, err) => {
-                                    if (dets) {
-                                        var address = details[0];
-                                        var name = Web3.utils.hexToAscii(details[1]);
-                                        if (!speeds((school) => school.name ===
-                                                name)) {
-                                            speeds.push({
-                                                name: name,
-                                                speed: upload,
-                                                data: [1],
-                                                schools: [schoolName]
-                                            })
-                                            This.ispCategories.push(name)
-                                        } else {
-                                            speeds = speeds.map((
-                                                school) => {
-                                                if (school.name === name) {
-                                                    school.data[0] += 1
-                                                    school.schools.push(schoolName)
-                                                }
-                                                return school
-                                            })
-                                        }
-                                    } else {
-                                        console.log('Something went wrong: ', error)
-                                    }
-                                }).catch((err) => {
-                                    console.log(err)
-                                })
-
-                            }
-                        })
+                })
+                results = results.map((id) => {
+                    var ispID, schoolName, address, country, latitude, longitude,
+                        upload, download, postalAddress;
+                    var details = web3.eth.abi.decodeParameters(["address", "bytes",
+                        "bytes",
+                        "bytes", "bytes", "bytes", "uint256", "uint256"
+                    ], id)
+                    schoolName = web3.utils.toAscii((details[1]))
+                    postalAddress = web3.utils.toAscii((details[2]))
+                    address = ((details[0]))
+                    country = web3.utils.toAscii((details[3]))
+                    latitude = web3.utils.toAscii((details[4]))
+                    longitude = web3.utils.toAscii((details[5]))
+                    upload = (details[6])
+                    download = (details[7])
+                    longitude = This.removetrailingZeros(longitude)
+                    latitude = This.removetrailingZeros(latitude)
+                    latitude = latitude.replace(/m/g, '-')
+                    longitude = longitude.replace(/m/g, '-')
+                    return {
+                        schoolName: schoolName,
+                        postalAddress: postalAddress,
+                        address: address,
+                        country: country,
+                        latitude: latitude,
+                        longitude: longitude,
+                        download: download,
+                        upload: upload
+                    }
+                    console.log(results)
+                })
+                results = results.map((item) => {
+                    if (countryName === item.country && web3.utils.isAddress(item.address)) {
+                        return This.UNICEFContract.methods.getISPDetails(item.address)
+                            .call({
+                                gas: 8000000
+                            }).then((results, err) => {
+                                return [item, results, err]
+                            })
                     }
                 })
-                if (speeds.length === 0) {
-                    speeds.push({
-                        name: "No ISP",
-                        data: [This.findCountrySchools(countryName).length]
+                await Promise.all(results).then((values) => {
+                    values.forEach((details) => {
+                        var address = details[1][0];
+                        var name = Web3.utils.hexToAscii(details[1][1]);
+                        name = This.removetrailingZeros(name)
+                        if (!This.ispOptions.series.some((school) => school.name ===
+                                name)) {
+
+                            This.ispOptions.series.push({
+                                "name": name,
+                                data: [parseInt(details[0].upload)],
+                            })
+                            This.ispOptions.xAxis.categories.push(name)
+                        }
                     })
-                } else if (speeds.length !== This.findCountrySchools(countryName).length) {
-                    speeds.push({
-                        name: "No ISP",
-                        speed: 0,
-                        data: [This.findCountrySchools(countryName).length - registeredSchools.length],
-                        schools: []
-                    })
-                }
+                    if (This.ispOptions.xAxis.categories.length === 0) {
+                        This.ispOptions.xAxis.categories.push("NO ISP")
+                        This.ispOptions.series.push({
+                            "name": "No ISP",
+                            data: [0],
+                        })
+                    }
+                    console.log(values)
+                })
+                console.log(speeds)
                 return speeds
             },
             getISPForCountry(countryName) {
                 return this.ispCategories
             },
-            getISPDonorsForCountry(countryName) {
+            getISPDonorsForCountry: async function (countryName) {
                 //@dev query smart contract
                 var donations = []
-                let This = this.UNICEFContract.methods.getallDonationKeys().call({
+                let This = this
+                var keys = await this.UNICEFContract.methods.getallDonationKeys().call({
                     gas: 8000000
-                }).then((keys, error) => {
-                    if (keys.length > 0) {
-                        keys.forEach((key) => {
-                            This.UNICEFContract.methods.getDonation(key).call({
-                                gas: 8000000
-                            }).then((details, err) => {
-                                if (!err) {
-                                    var name, country, amount, funder;
-                                    name = web3.utils.toAscii(details[0])
-                                    country = web3.utils.toAscii(details[1])
-                                    amount = web3.utils.toAscii(details[2])
-                                    funder = details[3]
-                                    if (!donations.some((donor) => donor.name === funder)) {
-                                        donations.push({
-                                            name: funder,
-                                            data: [{
-                                                name: name,
-                                                value: amount,
-                                                country: country
-                                            }]
-                                        })
-                                    } else {
-                                        donations = donations.map((donor) => {
-                                            if (donor.name === funder) {
-                                                donor.data.push({
-                                                    name: name,
-                                                    value: amount,
-                                                    country: country
-                                                })
-                                            }
-                                        })
-                                    }
-                                }
-                            }).catch((err) => {
-                                console.log(err)
-                            })
-                        })
-                    }
-                }).catch((err) => {
-                    console.log(err)
-                }).finally(() => {
-                    if (donations.length === 0) {
-                        donations = [{
-                            name: 'No Donors',
-                            data: [{
-                                name: 'No ISP',
-                                value: 0,
-                                speed: 0
-                            }]
-                        }]
-                    }
-                    return donations
                 })
-
-
+                if (keys.length > 0) {
+                    keys.forEach(async (key) => {
+                        var details = await This.UNICEFContract.methods.getDonation(key).call({
+                            gas: 8000000
+                        })
+                        var name, country, amount, funder;
+                        name = This.removetrailingZeros(web3.utils.toAscii(details[0]))
+                        country = web3.utils.toAscii(details[1])
+                        amount = web3.utils.toAscii(details[2])
+                        funder = details[3]
+                        console.log(funder, name, country, amount)
+                        if (!This.ispDonorOptions.series.some((donor) => donor
+                                .name === funder)) {
+                            This.ispDonorOptions.series.push({
+                                name: funder,
+                                data: [{
+                                    name: name,
+                                    value: amount,
+                                    country: country
+                                }]
+                            })
+                        } else {
+                            This.ispDonorOptions.series = This.ispDonorOptions.series.map((donor) => {
+                                if (donor.name === funder) {
+                                    donor.data.push({
+                                        name: name,
+                                        value: amount,
+                                        country: country
+                                    })
+                                }
+                            })
+                        }
+                    })
+                } else {
+                    This.ispDonorOptions.series = [{
+                        name: 'No Donors',
+                        data: [{
+                            name: 'No ISP',
+                            value: 0,
+                            speed: 0
+                        }]
+                    }]
+                }
             },
             findCountrySchools(countryName) {
                 var schools = require('../json/schools.json')
@@ -515,7 +509,8 @@
                         ////console.log("equal")
                         return
                     }
-                    var country = reverseGeoCoder.search(schools.GIS_Longitude.toString().replace(/ /g, ''),
+                    var country = reverseGeoCoder.search(schools.GIS_Longitude.toString()
+                        .replace(/ /g, ''),
                         schools.GIS_Latitude.toString().replace(/ /g, ''))
                     //console.log(reverseGeoCoder.search(schools.GIS_Longitude.toString().replace(/ /g,'')))
                     if (!country || country.name !== countryName) {
@@ -525,7 +520,8 @@
                     this.schools.push({
                         name: schools.Official_Institution_Name,
                         color: "#7EC0EE",
-                        description: ("Name: " + schools.Official_Institution_Name + "<br>Address: " +
+                        description: ("Name: " + schools.Official_Institution_Name +
+                            "<br>Address: " +
                             schools
                             .StreetAddress +
                             "\n" + schools.PostalAddress +
@@ -577,7 +573,7 @@
                             borderWidth: 0
                         }
                     },
-                    series: This.getISPForSchools(country)
+                    series: []
                 }
             },
             getISPForSchools: async function (countryName) {
@@ -586,48 +582,58 @@
                 var count = 0
                 let This = this
                 let registeredSchools = []
-                this.UNICEFContract.methods.getRegisteredSchoolIDs().call({
+                var results = await this.UNICEFContract.methods.getRegisteredSchoolIDs().call({
                     gas: 8000000
-                }).then((ids, error) => {
-                    console.log("ids: ", ids)
-                    if (ids.length > 0) {
-                        ids.forEach((id) => {
-                            var ispID, schoolName, address, country, latitude, longitude,
-                                upload, download, postalAddress;
-                            var details = web3.eth.abi.decodeParameters(["address", "bytes",
-                                "bytes",
-                                "bytes", "bytes", "bytes", "uint256", "uint256"
-                            ], id)
-                            schoolName = web3.utils.toAscii((details[1]))
-                            postalAddress = web3.utils.toAscii((details[2]))
-                            address = ((details[0]))
-                            country = web3.utils.toAscii((details[3]))
-                            latitude = web3.utils.toAscii((details[4]))
-                            longitude = web3.utils.toAscii((details[5]))
-                            upload = (details[6])
-                            download = (details[7])
-                            longitude = This.removetrailingZeros(longitude)
-                            latitude = This.removetrailingZeros(latitude)
-                            latitude = latitude.replace(/m/g, '-')
-                            longitude = longitude.replace(/m/g, '-')
-                            if (countryName === country) {
-                                //var trail = This.removetrailingZeros(latitude)
-                                console.log("address: ", address)
-                                console.log("postalAddress: ", postalAddress)
-                                This.UNICEFContract.methods.getISPDetails(address).call({
+                })
+                if (results.length > 0) {
+                    results.map((id) => {
+                        var ispID, schoolName, address, country, latitude,
+                            longitude,
+                            upload, download, postalAddress;
+                        var details = web3.eth.abi.decodeParameters(["address",
+                            "bytes",
+                            "bytes",
+                            "bytes", "bytes", "bytes", "uint256", "uint256"
+                        ], id)
+                        schoolName = web3.utils.toAscii((details[1]))
+                        postalAddress = web3.utils.toAscii((details[2]))
+                        address = ((details[0]))
+                        country = web3.utils.toAscii((details[3]))
+                        latitude = web3.utils.toAscii((details[4]))
+                        longitude = web3.utils.toAscii((details[5]))
+                        upload = (details[6])
+                        download = (details[7])
+                        longitude = This.removetrailingZeros(longitude)
+                        latitude = This.removetrailingZeros(latitude)
+                        latitude = latitude.replace(/m/g, '-')
+                        longitude = longitude.replace(/m/g, '-')
+                        if (countryName === country) {
+                            console.log("address: ", address)
+                            console.log("postalAddress: ", postalAddress)
+                            This.UNICEFContract.methods.getISPDetails(address)
+                                .call({
                                     gas: 8000000
                                 }).then((dets, err) => {
                                     if (err) {
                                         console.log("error: ", err)
                                     }
                                     if (dets) {
-                                        var address = details[0];
-                                        var name = Web3.utils.hexToAscii(details[1]);
-                                        console.log("dets: ", details)
-                                        if (!registeredSchools.some((school) => school
+                                        var address = dets[0];
+                                        var name = Web3.utils.hexToAscii(
+                                            dets[1]);
+                                        name = This.removetrailingZeros(name)
+                                        console.log("dets: ", dets)
+                                        if (!This.DetailsOptions.series.some((school) =>
+                                                school
                                                 .name ===
                                                 name)) {
-                                            registeredSchools.push({
+                                            This.DetailsOptions.series.push({
+                                                name: name,
+                                                speed: upload,
+                                                data: [1],
+                                                schools: [schoolName]
+                                            })
+                                            This.activityOptions.series.push({
                                                 name: name,
                                                 speed: upload,
                                                 data: [1],
@@ -635,56 +641,68 @@
                                             })
                                             console.log("adding: ", name)
                                         } else {
-                                            registeredSchools = registeredSchools.map((
-                                                school) => {
-                                                if (school.name === name) {
-                                                    console.log("updating: ",
-                                                        school)
-                                                    school.data[0] += 1
-                                                    school.schools.push(schoolName)
-                                                }
-                                                return school
-                                            })
+                                            This.DetailsOptions.series =
+                                                This.DetailsOptions.series.map((
+                                                    school) => {
+                                                    if (school.name ===
+                                                        name) {
+                                                        console.log("updating: ", school)
+                                                        school.data[0] += 1
+                                                        school.schools.push(
+                                                            schoolName)
+                                                    }
+                                                    return school
+                                                })
+                                            This.activityOptions.series = This.activityOptions
+                                                .series.map((
+                                                    activity) => {
+                                                    if (activity.name ===
+                                                        name) {
+                                                        console.log("updating: ", activity)
+                                                        activity.data[0] += 1
+                                                        activity.schools.push(
+                                                            schoolName)
+                                                    }
+                                                    return school
+                                                })
+
+                                            //This.DetailsOptions.series = registeredSchools
                                         }
                                     } else {
-                                        console.log('Something went wrong: ', error)
+                                        console.log('Something went wrong: ',
+                                            error)
                                     }
                                 }).catch((err) => {
                                     console.log(err)
                                 })
-                            }
-                        })
-                        //console.log(schoolsFormated.length)
-                        //this.isLoading = false
-                        console.log(registeredSchools)
-
-                    }
-                }).catch((err) => {
-                    console.log(err)
-                }).finally(() => {
-                    if (registeredSchools.length === 0) {
-                        registeredSchools.push({
-                            name: "Not Connected",
-                            data: [This.findCountrySchools(
-                                countryName).length]
-                        })
-                    } else if (registeredSchools.length !== This
-                        .findCountrySchools(countryName).length) {
-                        registeredSchools.push({
-                            name: "Not Connected",
-                            speed: 0,
-                            data: [This.findCountrySchools(
-                                    countryName).length -
-                                registeredSchools
-                                .length
-                            ],
-                            schools: []
-                        })
-                    }
-                    return registeredSchools
-                })
-
-
+                        }
+                    })
+                    This.DetailsOptions.series.push({
+                        name: "Not Connected",
+                        speed: 0,
+                        data: [This.findCountrySchools(countryName).length - results.length],
+                        schools: []
+                    })
+                    This.activityOptions.series.push({
+                        name: "No Activity",
+                        speed: 0,
+                        data: [This.findCountrySchools(countryName).length - results.length],
+                        schools: []
+                    })
+                } else {
+                    This.DetailsOptions.series.push({
+                        name: "Not Connected",
+                        speed: 0,
+                        data: [This.findCountrySchools(countryName).length],
+                        schools: []
+                    })
+                    This.activityOptions.series.push({
+                        name: "No Activity",
+                        speed: 0,
+                        data: [This.findCountrySchools(countryName).length],
+                        schools: []
+                    })
+                }
             },
             removetrailingZeros(string) {
                 console.log(string.split('').filter((c) => c.match(/^[0-9a-zA-Z-.]+$/)))
@@ -697,10 +715,12 @@
                     if (!school.GIS_Latitude || !school.GIS_Longitude) {
                         return
                     } else {
-                        school.GIS_Latitude = school.GIS_Latitude.toString().replace(/,/g, '.')
+                        school.GIS_Latitude = school.GIS_Latitude.toString().replace(/,/g,
+                                '.')
                             .toString()
                             .replace(/ /g, '')
-                        school.GIS_Longitude = school.GIS_Longitude.toString().replace(/,/g, '.')
+                        school.GIS_Longitude = school.GIS_Longitude.toString().replace(/,/g,
+                                '.')
                             .toString()
                             .replace(/ /g, '')
                         if (school.GIS_Latitude === school.GIS_Longitude) {
@@ -708,7 +728,8 @@
                             return
                         }
                         // ////console.log(school)
-                        var country = reverseGeoCoder.search(school.GIS_Longitude, school.GIS_Latitude)
+                        var country = reverseGeoCoder.search(school.GIS_Longitude, school
+                            .GIS_Latitude)
                         //console.log(country)
                         if (!country) {
                             return
@@ -757,13 +778,15 @@
                 var connectedSchools = map.features.filter((feature) => {
                     // ////console.log(feature.properties, countrySchools.some((school) => school.name === feature
                     //      .properties.name))
-                    return countrySchools.some((school) => school.country === feature.properties
+                    return countrySchools.some((school) => school.country === feature
+                        .properties
                         .name)
                 })
                 //////console.log("connected: ", connectedSchools)
                 connectedSchools = connectedSchools.map((country) => {
                     ////console.log(country.properties["hc-key"])
-                    return [country.properties["hc-key"], countrySchools.find((school) => school
+                    return [country.properties["hc-key"], countrySchools.find((school) =>
+                        school
                         .country ===
                         country.properties.name).value]
                 })
