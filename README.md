@@ -75,4 +75,8 @@ deployment: {
       port: "your ganache port number",
     }
 
-
+# Assumptions
+1. All payments paid through Eth or if the donor has token they can also pay using that token
+2. When an ISP updates its speed connection they use the same network there is no need for a UI where they can input these values this is calculated in real time
+3. Everything is stored on the UNICEF contract
+4. All users have to register as a Normal user before being classified as an ISP or school
