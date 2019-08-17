@@ -45,21 +45,22 @@ Reports should be generated at an ongoing basis re. the connectivity of schools 
 3. npm install -g @vue/cli
 4. npm install -g embark (in the instance where this fails please ensure you have git installed see: https://git-scm.com/downloads also ensure you have the windows build tools if you using a windows machine just run the following command in admin mode: npm install --global windows-build-tools
  see: https://www.npmjs.com/package/windows-build-tools for more instructions)
-5. embark run --nodashboard
-6. npm run serve
+5. ```embark run --nodashboard``
+6. ```npm run serve```
 
 should be good to go in the instance where you dont have geth instead of running  embark run --nodashboard open a new CLI and navigate to the project folder from there run 
 
-# embark simulator
+```embark simulator```
 
 # or you can install ganache and change the configuration specified in the contracts file
 
 at the moment its running of my private chain if you wish to run it off this just run the following command
 
-# embark run Chain --nodashboard
+``embark run Chain --nodashboard``
 
 if you wish to spin off you own ganache instance just modify the 
 
+```
 deployment: {
       protocol: "http",
       type: "rpc",
@@ -74,7 +75,7 @@ deployment: {
       host: "localhost/ip address",
       port: "your ganache port number",
     }
-
+```
 # Assumptions
 1. All payments paid through Eth or if the donor has token they can also pay using that token
 2. When an ISP updates its speed connection they use the same network there is no need for a UI where they can input these values this is calculated in real time
