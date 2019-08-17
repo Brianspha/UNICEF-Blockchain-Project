@@ -4,21 +4,21 @@
             <v-container grid-list-md style="height:1024px" fluid>
                 <template>
                     <v-layout justify-center>
-                        <v-dialog v-model="accountDetails" persistent max-width="600px">
+                        <v-dialog v-model="complaints" persistent max-width="600px">
                             <v-card>
                                 <v-card-title>
-                                    <span class="headline">My Details</span>
+                                    <span class="headline">Warnings</span>
                                 </v-card-title>
                                 <v-card-text>
                                     <v-container grid-list-md>
                                         <v-layout wrap>
-                                            Wallet Address: {{userAddress}}
+                                            Complaint: {{complaint}}
                                         </v-layout>
                                     </v-container>
                                 </v-card-text>
                                 <v-card-actions>
                                     <v-spacer></v-spacer>
-                                    <v-btn color="#7EC0EE" text @click="accountDetails = false">Close</v-btn>
+                                    <v-btn color="#7EC0EE" text @click="complaints = false">Close</v-btn>
                                 </v-card-actions>
                             </v-card>
                         </v-dialog>
@@ -125,8 +125,8 @@
                                                         </v-card-text>
                                                     </v-card>
                                                 </v-flex>
-                                                <v-flex v-if="myDonations.length>0 && myDonationsDialog" v-for="(donation,index) in myDonations " :key="index"
-                                                    xs4>
+                                                <v-flex v-if="myDonations.length>0 && myDonationsDialog"
+                                                    v-for="(donation,index) in myDonations " :key="index" xs4>
                                                     <v-hover v-slot:default="{ hover }" close-delay="200">
                                                         <v-card :elevation="hover  ? 16 : 2" class="mx-auto"
                                                             height="200" outlined>
@@ -134,18 +134,6 @@
                                                                 ISP Name: {{donation.ispName}}<br>
                                                                 Country: {{donation.country}}<br>
                                                                 Amount: {{donation.amount}} ETH<br>
-                                                                <v-card-actions>
-                                                                    <v-tooltip top>
-                                                                        <template v-slot:activator="{ on }">
-                                                                            <v-btn class="ma-2" tile large
-                                                                                color="#7EC0EE" icon v-ripple v-on="on"
-                                                                                @click="reportISP(index)">
-                                                                                <v-icon>error</v-icon>
-                                                                            </v-btn>
-                                                                        </template>
-                                                                        <span>Report</span>
-                                                                    </v-tooltip>
-                                                                </v-card-actions>
                                                             </v-layout>
                                                         </v-card>
                                                     </v-hover>
@@ -373,7 +361,15 @@
                     <v-flex>
                         <v-card>
                             <v-layout align-center row fill-height wrap>
-
+                                <v-flex xs4 v-ripple @click="showMenu(1)">
+                                    <v-hover v-slot:default="{ hover }" close-delay="200">
+                                        <v-card :elevation="hover ? 16 : 2" class="mx-auto" height="200">
+                                            <v-layout align-center justify-center column fill-height>
+                                                Complaints
+                                            </v-layout>
+                                        </v-card>
+                                    </v-hover>
+                                </v-flex>
                                 <v-flex xs4 v-ripple @click="showMenu(2)">
                                     <v-hover v-slot:default="{ hover }" close-delay="200">
                                         <v-card :elevation="hover ? 16 : 2" class="mx-auto" height="200">
@@ -571,11 +567,11 @@
                 ispTCS: false,
                 isLoading: false,
                 fullPage: true,
-                accountDetails: false,
+                complaints: false,
                 donate: false,
                 supportingSchools: false,
                 myDonations: [],
-                myDonationsDialog:false,
+                myDonationsDialog: false,
                 ispRegistration: false,
                 ispUpdate: false,
                 isISP: true,
@@ -609,7 +605,8 @@
                 })),
                 schools: [],
                 center: [],
-                supportingCountries: []
+                supportingCountries: [],
+                complaint: ''
 
 
             }
@@ -768,7 +765,8 @@
                 console.log(this.dataBundles)
                 switch (whichMenu) {
                     case 1:
-                        this.accountDetails = true
+                        this.complaints = true
+                        this.getComplaints()
                         break
                     case 2:
                         this.donate = true
@@ -792,6 +790,28 @@
                     case 7:
                         this.isSchoolRegistration = true
                         break
+                }
+            },
+            getComplaints: async function () {
+                var ispRegistered = await this.UNICEFContract.methods.ispRegistered(web3.eth.defaultAccount).call({
+                    gas: 8000000
+                })
+                if (ispRegistered) {
+                    var speeds = await this.UNICEFContract.methods.getUploadDownloadSpeed().call({
+                        gas: 8000000
+                    })
+                    var ispSpeeds = await this.UNICEFContract.methods.getISPSpeed().call({
+                        gas: 8000000000000
+                    })
+                    console.log(ispSpeeds, speeds)
+                    this.complaint =
+                        `You current speed average speed is sitting at ${ispSpeeds[0]} mpbs  and the required by unicef is ${speeds[0]} mbps`
+                    if (parseInt(speeds[0]) > parseInt(ispSpeeds[0])) {
+                        this.complaint +=
+                            ' \n You stand a chance of having all funding withdrawn if this is not resolved'
+                    }
+                } else {
+                    this.complaint = 'Currently not providing any services'
                 }
             },
             removetrailingZeros(string) {
@@ -839,7 +859,8 @@
                                     " <b>(mbps)</b><br>Download-Speed: " + download +
                                     " <b>(mbps)</b>")
                             })
-                            if (This.supportingCountries.length === 0||!This.supportingCountries.some((conty)=>conty.country ===country)) {
+                            if (This.supportingCountries.length === 0 || !This.supportingCountries.some(
+                                    (conty) => conty.country === country)) {
                                 This.supportingCountries.push({
                                     country: country,
                                     uploadSpeed: upload,
@@ -872,6 +893,7 @@
             },
             getMyDonations() {
                 let This = this
+                This.myDonations=[]
                 this.UNICEFContract.methods.getUserDontaionKeys().call({
                     gas: 8000000
                 }).then((keys, err) => {
@@ -1073,16 +1095,20 @@
                     }
                 }
             },
-            registerISP() {
+            registerISP: async function () {
                 let This = this
                 if (this.validIspTCS) {
                     this.isLoading = true
+                    const baseUrl = 'http://eu.httpbin.org/stream-bytes/50000000';
+                    const fileSize =
+                        500000; //@dev we just assume that the upload speed is the same as the download speed terrible assumption :XD
+                    var speed = await this.testNetworkSpeed.checkDownloadSpeed(baseUrl, fileSize)
                     console.log(this.Web3.utils.utf8ToHex(this.ispName))
                     console.log(this.Web3.utils.utf8ToHex(this.ispEmail))
                     console.log(this.Web3.utils.utf8ToHex(this.selectedCountry))
                     this.UNICEFContract.methods.registerISP(this.Web3.utils.utf8ToHex(this.ispName), this
                             .Web3.utils
-                            .utf8ToHex(this.ispEmail), this.Web3.utils.utf8ToHex(this.selectedCountry))
+                            .utf8ToHex(this.ispEmail), this.Web3.utils.utf8ToHex(this.selectedCountry),Math.round(speed.mbps))
                         .send({
                             gas: 8000000
                         }).then((receipt, err) => {

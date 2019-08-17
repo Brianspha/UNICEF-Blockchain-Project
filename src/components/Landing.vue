@@ -290,7 +290,7 @@
                     },
                     tooltip: {
                         useHTML: true,
-                        pointFormat: '<b>School ISP Name:</b>{point.name} <br> <b>Amount (Eth):</b> {point.value} <br> <b>ConnectionSpeed:</b> {point.speed}'
+                        pointFormat: '<b>ISP Name:</b>{point.name} <br> <b>Amount (Eth):</b> {point.value} <br>'
                     },
                     plotOptions: {
                         packedbubble: {
@@ -412,30 +412,35 @@
                 })
                 await Promise.all(results).then((values) => {
                     values.forEach((details) => {
+                        if(details){
                         var address = details[1][0];
                         var name = Web3.utils.hexToAscii(details[1][1]);
                         name = This.removetrailingZeros(name)
+                        var country =Web3.utils.hexToAscii(details[1][2]);
+                        country = This.removetrailingZeros(country)
                         if (!This.ispOptions.series.some((school) => school.name ===
                                 name)) {
 
                             This.ispOptions.series.push({
                                 "name": name,
                                 data: [parseInt(details[0].upload)],
+                                speed:parseInt(details[0].upload)
                             })
                             This.ispOptions.xAxis.categories.push(name)
                         }
+                    }
                     })
                     if (This.ispOptions.xAxis.categories.length === 0) {
                         This.ispOptions.xAxis.categories.push("NO ISP")
                         This.ispOptions.series.push({
                             "name": "No ISP",
                             data: [0],
+                             speed:0
                         })
                     }
                     console.log(values)
                 })
-                console.log(speeds)
-                return speeds
+                console.log(this.ispOptions.series)
             },
             getISPForCountry(countryName) {
                 return this.ispCategories
@@ -455,7 +460,7 @@
                         var name, country, amount, funder;
                         name = This.removetrailingZeros(web3.utils.toAscii(details[0]))
                         country = web3.utils.toAscii(details[1])
-                        amount = web3.utils.toAscii(details[2])
+                        amount =(details[2])
                         funder = details[3]
                         console.log(funder, name, country, amount)
                         if (!This.ispDonorOptions.series.some((donor) => donor
@@ -464,7 +469,7 @@
                                 name: funder,
                                 data: [{
                                     name: name,
-                                    value: amount,
+                                    value: parseInt(amount),
                                     country: country
                                 }]
                             })
@@ -473,7 +478,7 @@
                                 if (donor.name === funder) {
                                     donor.data.push({
                                         name: name,
-                                        value: amount,
+                                        value: parseInt(amount),
                                         country: country
                                     })
                                 }
@@ -663,7 +668,7 @@
                                                         activity.schools.push(
                                                             schoolName)
                                                     }
-                                                    return school
+                                                    return activity
                                                 })
 
                                             //This.DetailsOptions.series = registeredSchools

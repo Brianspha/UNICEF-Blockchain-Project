@@ -151,16 +151,19 @@ contract UNICEF {
     }
 
     /*=============== ISP Function definition Start===============*/
-    function registerISP(bytes32 name, bytes32 email, bytes32 country) public returns(bool) {
+    function registerISP(bytes32 name, bytes32 email, bytes32 country, uint256 speed) public returns(bool) {
         require(msg.sender != address(0), "Invalid sender address");
         require(!registeredISPs[msg.sender].active, "Already registered as ISP");
         require(registeredDefaultUsers[msg.sender].active, "User not registered");
+        require(speed > 0, "Internet speed must be greater than 0");
         registeredISPs[msg.sender].Address = msg.sender;
         registeredISPs[msg.sender].email = email;
         registeredISPs[msg.sender].country = country;
         registeredISPs[msg.sender].userType = UserTypes.ISP;
         registeredISPs[msg.sender].active = true;
         registeredISPs[msg.sender].name = name;
+        registeredISPs[msg.sender].uploadSpeed = speed;
+        registeredISPs[msg.sender].downloadSpeed = speed;
         registeredISPsKeys.push(msg.sender);
         return true;
     }
@@ -181,6 +184,12 @@ contract UNICEF {
     function getSchoolsConnectedTOISPKeys() public view returns(bytes[] memory) {
         require(registeredISPs[msg.sender].active, "ISP not registered");
         return registeredISPs[msg.sender].schoolsConnecting;
+    }
+
+    function getISPSpeed() public view returns(uint256, uint256) {
+        require(msg.sender != address(0), "Invalid sender address");
+        require(registeredISPs[msg.sender].active, "Not registered as ISP");
+        return (registeredISPs[msg.sender].uploadSpeed, registeredISPs[msg.sender].downloadSpeed);
     }
 
     function updateuploadDownloadSpeedISP(uint256 upload, uint256 download) public returns(bool) {
@@ -282,5 +291,9 @@ contract UNICEF {
     function updateuploadDownloadSpeeds(uint256 upload, uint256 download) public onlyUnicef returns(bool) {
         uploadSpeed = upload;
         downloadSpeed = download;
+    }
+
+    function getUploadDownloadSpeed() public view returns(uint256, uint256) {
+        return (uploadSpeed, downloadSpeed);
     }
 }
