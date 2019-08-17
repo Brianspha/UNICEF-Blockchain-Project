@@ -51,8 +51,7 @@ Reports should be generated at an ongoing basis re. the connectivity of schools 
 should be good to go in the instance where you dont have geth instead of running  embark run --nodashboard open a new CLI and navigate to the project folder from there run 
 
 ```embark simulator```
-
-# or you can install ganache and change the configuration specified in the contracts file
+or you can install ganache and change the configuration specified in the contracts file
 
 at the moment its running of my private chain if you wish to run it off this just run the following command
 
