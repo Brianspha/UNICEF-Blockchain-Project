@@ -270,7 +270,7 @@
 
       },
       watchForAccountChanges() {
-        let tempThis = this
+        let This = this
         window.ethereum.on('accountsChanged', function (accounts) {
           This.resetMenu()
         })
