@@ -1,5 +1,5 @@
-# UNICEF-Blockchain-Project
-
+# UNICEF-Blockchain-Project [Deprecated]
+*Unfortunetly i couldnt carry out a few of the requirements specified on the UNICEF bounty page because they were unclear*
 Reducing the digital divide with blockchain & crypto
 We want to connect every kid in the world to the best services the internet has to offer and in order to do that we need to connect every school in the world to an appropriate supply of gigabytes. We need to figure out how to pay for that connectivity and account for those payments in a fair and transparent manner. We need a blockchain based system for dynamic load balancing, accounting and arbitrage across multiple different chains of value from connectivity to energy to IOTsensors in the schools to create new economies and make this effort self-sustaining.Systems exist for doing this type of monitoring in the fields of connectivity and electricity but they are mostly built for more wealthy and well-connected environments.
 
